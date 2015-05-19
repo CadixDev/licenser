@@ -1,0 +1,46 @@
+plugins {
+    id 'groovy'
+    id 'maven-publish'
+
+    id 'eclipse'
+    id 'idea'
+}
+
+group = 'net.minecrell'
+version = '0.1-SNAPSHOT'
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+archivesBaseName = project.name.toLowerCase()
+
+dependencies {
+    compile gradleApi()
+    compile localGroovy()
+}
+
+task sourceJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifactId archivesBaseName
+
+            artifact sourceJar
+
+            repositories {
+                maven {
+                    url = System.getenv('REPO_' + (version.endsWith('-SNAPSHOT') ? 'SNAPSHOTS' : 'RELEASES')) ?: "$buildDir/repo"
+                }
+            }
+        }
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.4'
+}
