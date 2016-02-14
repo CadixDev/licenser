@@ -33,7 +33,7 @@ class PreparedCommentHeader implements PreparedHeader {
                 return
             }
 
-            if (!format.start.matcher(line).find()) {
+            if (!(line =~ format.start)) {
                 last = line
                 text = reader.text
                 return
@@ -56,17 +56,15 @@ class PreparedCommentHeader implements PreparedHeader {
                     return
                 }
 
-                def matcher = format.end.matcher(line)
-                if (matcher.find()) {
-                    if (matcher.hasGroup()) {
-                        def group = matcher.group(1)
-                        if (!group.isEmpty()) {
-                            // There is stuff after the comment has ended, never valid
-                            valid = false
-                            last = matcher.group(1)
-                            text = reader.text
-                            return
-                        }
+                def matcher = line =~ format.end
+                if (matcher) {
+                    def group = matcher.group(1)
+                    if (!group.isEmpty()) {
+                        // There is stuff after the comment has ended, never valid
+                        valid = false
+                        last = group
+                        text = reader.text
+                        return
                     }
 
                     // Check if really valid
