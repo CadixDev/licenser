@@ -5,10 +5,8 @@ final class HeaderFormats {
     private HeaderFormats() {
     }
 
-    static final HeaderFormat SLASHSTAR = new CommentHeaderFormat('SLASHSTAR', '/*', ' *', ' */')
-
     static {
-        register(SLASHSTAR, 'java', 'groovy', 'scala', 'gradle')
+        StandardHeaderFormat.register()
     }
 
     private static final Map<String, HeaderFormat> formats = new HashMap<>()
@@ -21,10 +19,6 @@ final class HeaderFormats {
         } else {
             return formats.put(extension, format)
         }
-    }
-
-    static void register(HeaderFormat format, String... extensions) {
-        extensions.each { register(format, it) }
     }
 
     static HeaderFormat find(String extension) {

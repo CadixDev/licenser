@@ -38,7 +38,7 @@ class LicenseCheck extends LicenseTask implements VerificationTask {
         if (!violations.isEmpty()) {
             String violators = violations.collect { getSimplifiedPath(it) }.join(', ')
 
-            final def message = "Found files with missing/invalid license headers: $violators"
+            final def message = "License violations were found: $violators"
             if (ignoreFailures) {
                 logger.error(message)
             } else {

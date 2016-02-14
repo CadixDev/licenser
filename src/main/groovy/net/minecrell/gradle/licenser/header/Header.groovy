@@ -1,18 +1,16 @@
 package net.minecrell.gradle.licenser.header
 
-import net.minecrell.gradle.licenser.util.StringHelper
+import net.minecrell.gradle.licenser.util.HeaderHelper
 
 class Header {
 
     private final Closure<String> loader
     private String text
-    private final boolean newLine
 
     private final Map<HeaderFormat, PreparedHeader> formatted = new HashMap<>()
 
-    Header(Closure<String> loader, boolean newLine) {
+    Header(Closure<String> loader) {
         this.loader = loader
-        this.newLine = newLine
     }
 
     String getText() {
@@ -30,14 +28,14 @@ class Header {
 
         PreparedHeader result = formatted[format]
         if (result == null) {
-            result = format.prepare(getText(), this.newLine)
+            result = format.prepare(getText())
             formatted[format] = result
         }
         return result
     }
 
     PreparedHeader prepare(String path) {
-        return prepare(HeaderFormats.find(StringHelper.getExtension(path)))
+        return prepare(HeaderFormats.find(HeaderHelper.getExtension(path)))
     }
 
     PreparedHeader prepare(File file) {

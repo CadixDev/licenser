@@ -11,8 +11,6 @@ class LicenseExtension extends PatternSet {
 
     String charset = 'UTF-8'
 
-    boolean newLine = true
-
     boolean ignoreFailures = false
 
 }

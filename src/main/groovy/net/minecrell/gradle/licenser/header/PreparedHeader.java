@@ -7,6 +7,6 @@ public interface PreparedHeader {
 
     boolean check(File file, String charset) throws IOException;
 
-    void update(File file, String charset) throws IOException;
+    boolean update(File file, String charset) throws IOException;
 
 }

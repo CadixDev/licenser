@@ -1,35 +1,39 @@
 package net.minecrell.gradle.licenser.header
 
-import net.minecrell.gradle.licenser.util.StringHelper
+import net.minecrell.gradle.licenser.util.HeaderHelper
 
 class CommentHeaderFormat implements HeaderFormat {
 
     final String name
+
     final String start
-    final String prefix
     final String end
-    CommentHeaderFormat(String name, String start, String prefix, String end) {
+
+    final String firstLine
+    final String prefix
+    final String lastLine
+
+    CommentHeaderFormat(String name, String start, String end, String firstLine, String prefix, String lastLine) {
         this.name = name
         this.start = start
-        this.prefix = prefix
         this.end = end
+        this.firstLine = firstLine
+        this.prefix = prefix
+        this.lastLine = lastLine
     }
 
-    protected List<String> format(String text, boolean newLine) {
-        ensureAbsent(text, start)
-        ensureAbsent(text, end)
+    protected List<String> format(String text) {
+        ensureAbsent(text, firstLine)
+        ensureAbsent(text, lastLine)
 
-        List<String> result = [start]
+        List<String> result = [firstLine]
 
         text.eachLine {
-            result << StringHelper.trimEnd("$prefix $it")
+            result << HeaderHelper.stripTrailingIndent("$prefix $it")
         }
 
-        result << end
+        result << lastLine
 
-        if (newLine) {
-            result << ''
-        }
         return result
     }
 
@@ -40,8 +44,8 @@ class CommentHeaderFormat implements HeaderFormat {
     }
 
     @Override
-    PreparedHeader prepare(String text, boolean newLine) {
-        return new PreparedCommentHeader(this, format(text, newLine))
+    PreparedHeader prepare(String text) {
+        return new PreparedCommentHeader(this, format(text))
     }
 
 }

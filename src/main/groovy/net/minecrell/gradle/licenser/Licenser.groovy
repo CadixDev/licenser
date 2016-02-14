@@ -53,7 +53,7 @@ class Licenser implements Plugin<Project> {
                     }
 
                     return ""
-                }, extension.newLine)
+                })
 
                 extension.sourceSets.each {
                     def check = createTask(it.getTaskName(CHECK_TASK, null), LicenseCheck, header, it)
