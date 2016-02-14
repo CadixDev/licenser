@@ -1,5 +1,6 @@
 package net.minecrell.gradle.licenser.tasks
 
+import net.minecrell.gradle.licenser.LicenseViolationException
 import org.gradle.api.file.FileVisitDetails
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.VerificationTask
@@ -42,7 +43,7 @@ class LicenseCheck extends LicenseTask implements VerificationTask {
             if (ignoreFailures) {
                 logger.error(message)
             } else {
-                throw new RuntimeException(message)
+                throw new LicenseViolationException(message)
             }
         }
     }
