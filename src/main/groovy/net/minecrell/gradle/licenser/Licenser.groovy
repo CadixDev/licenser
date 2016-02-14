@@ -7,7 +7,6 @@ import net.minecrell.gradle.licenser.tasks.LicenseTask
 import net.minecrell.gradle.licenser.tasks.LicenseUpdate
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.tasks.SourceSet
 
 class Licenser implements Plugin<Project> {
@@ -15,11 +14,8 @@ class Licenser implements Plugin<Project> {
     private static final String CHECK_TASK = 'licenseCheck'
     private static final String FORMAT_TASK = 'licenseFormat'
 
-    protected Project project
-    protected LicenseExtension extension
-
-    protected Task globalCheck
-    protected Task globalFormat
+    private Project project
+    private LicenseExtension extension
 
     @Override
     void apply(Project project) {
@@ -32,8 +28,8 @@ class Licenser implements Plugin<Project> {
                 sourceSets = project.sourceSets
             }
 
-            this.globalCheck = task(CHECK_TASK)
-            this.globalFormat = task(FORMAT_TASK)
+            def globalCheck = task(CHECK_TASK)
+            def globalFormat = task(FORMAT_TASK)
 
             // Wait a bit until creating the tasks
             afterEvaluate {
@@ -53,7 +49,7 @@ class Licenser implements Plugin<Project> {
                     }
 
                     return ""
-                })
+                }, extension.newLine)
 
                 extension.sourceSets.each {
                     def check = createTask(it.getTaskName(CHECK_TASK, null), LicenseCheck, header, it)

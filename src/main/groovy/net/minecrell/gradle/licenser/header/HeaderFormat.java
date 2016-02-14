@@ -4,6 +4,6 @@ public interface HeaderFormat {
 
     String getName();
 
-    PreparedHeader prepare(String text);
+    PreparedHeader prepare(String text, boolean newLine);
 
 }

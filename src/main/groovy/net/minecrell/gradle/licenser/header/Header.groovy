@@ -5,12 +5,14 @@ import net.minecrell.gradle.licenser.util.HeaderHelper
 class Header {
 
     private final Closure<String> loader
+    private final boolean newLine
     private String text
 
     private final Map<HeaderFormat, PreparedHeader> formatted = new HashMap<>()
 
-    Header(Closure<String> loader) {
+    Header(Closure<String> loader, boolean newLine) {
         this.loader = loader
+        this.newLine = newLine
     }
 
     String getText() {
@@ -28,7 +30,7 @@ class Header {
 
         PreparedHeader result = formatted[format]
         if (result == null) {
-            result = format.prepare(getText())
+            result = format.prepare(getText(), this.newLine)
             formatted[format] = result
         }
         return result

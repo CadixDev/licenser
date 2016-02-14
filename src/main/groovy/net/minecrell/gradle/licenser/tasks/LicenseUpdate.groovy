@@ -24,6 +24,7 @@ class LicenseUpdate extends LicenseTask {
                 }
 
                 if (prepared.update(file, charset)) {
+                    logger.lifecycle('Updating license header in {}', getSimplifiedPath(file))
                     didWork = true
                 }
             }

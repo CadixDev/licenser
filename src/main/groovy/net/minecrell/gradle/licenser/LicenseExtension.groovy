@@ -7,6 +7,8 @@ class LicenseExtension extends PatternSet {
 
     File header
 
+    boolean newLine = true
+
     Collection<SourceSet> sourceSets
 
     String charset = 'UTF-8'

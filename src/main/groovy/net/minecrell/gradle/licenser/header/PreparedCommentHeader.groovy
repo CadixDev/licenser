@@ -33,7 +33,7 @@ class PreparedCommentHeader implements PreparedHeader {
                 return
             }
 
-            if (!HeaderHelper.stripIndent(line).startsWith(format.start)) {
+            if (!HeaderHelper.stripIndent(line).equals(format.start)) {
                 last = line
                 text = reader.text
                 return
@@ -42,6 +42,10 @@ class PreparedCommentHeader implements PreparedHeader {
             valid = true
             def itr = this.lines.iterator()
             while (true) {
+                if (!itr.hasNext()) {
+                    valid = false
+                }
+
                 if (valid && itr.next() != line) {
                     valid = false
                 }
@@ -67,9 +71,19 @@ class PreparedCommentHeader implements PreparedHeader {
                     // Check if really valid
                     if (valid) {
                         valid = line == itr.next()
-                        assert !itr.hasNext(), "Cannot have lines after end of header"
                         if (valid) {
-                            return
+                            while (valid && itr.hasNext()) {
+                                line = reader.readLine()
+                                if (line == null) {
+                                    valid = false
+                                    return
+                                }
+
+                                if (line != itr.next()) {
+                                    valid = false
+                                    last = line
+                                }
+                            }
                         }
                     }
 

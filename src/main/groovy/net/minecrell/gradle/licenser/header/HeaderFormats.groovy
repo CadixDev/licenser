@@ -6,7 +6,7 @@ final class HeaderFormats {
     }
 
     static {
-        StandardHeaderFormat.register()
+        HeaderStyle.register()
     }
 
     private static final Map<String, HeaderFormat> formats = new HashMap<>()
