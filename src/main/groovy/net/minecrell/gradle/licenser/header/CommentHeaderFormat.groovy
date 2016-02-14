@@ -2,18 +2,20 @@ package net.minecrell.gradle.licenser.header
 
 import net.minecrell.gradle.licenser.util.HeaderHelper
 
+import java.util.regex.Pattern
+
 class CommentHeaderFormat implements HeaderFormat {
 
     final String name
 
-    final String start
-    final String end
+    final Pattern start
+    final Pattern end
 
     final String firstLine
     final String prefix
     final String lastLine
 
-    CommentHeaderFormat(String name, String start, String end, String firstLine, String prefix, String lastLine) {
+    CommentHeaderFormat(String name, Pattern start, Pattern end, String firstLine, String prefix, String lastLine) {
         this.name = name
         this.start = start
         this.end = end

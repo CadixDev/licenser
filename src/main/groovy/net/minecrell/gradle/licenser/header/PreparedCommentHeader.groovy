@@ -33,7 +33,7 @@ class PreparedCommentHeader implements PreparedHeader {
                 return
             }
 
-            if (!HeaderHelper.stripIndent(line).equals(format.start)) {
+            if (!format.start.matcher(line).matches()) {
                 last = line
                 text = reader.text
                 return
@@ -56,14 +56,12 @@ class PreparedCommentHeader implements PreparedHeader {
                     return
                 }
 
-                int pos = line.indexOf(format.end)
-                if (pos >= 0) {
-                    pos += format.end.length()
-                    def trimmed = HeaderHelper.stripTrailingIndent(line)
+                def matcher = format.end.matcher(line)
+                if (matcher.matches()) {
                     // There is stuff after the comment has ended, never valid
-                    if (pos < trimmed.length()) {
+                    if (matcher.hasGroup()) {
                         valid = false
-                        last = HeaderHelper.stripIndent(line[pos..-1])
+                        last = matcher.group(1)
                         text = reader.text
                         return
                     }

@@ -19,12 +19,12 @@ class LicenseUpdate extends LicenseTask {
                 def file = details.file
                 def prepared = this.header.prepare(file)
                 if (prepared == null) {
-                    logger.warn("No matching header format found for file {}", getSimplifiedPath(file))
+                    logger.warn("No matching header format found for file: {}", getSimplifiedPath(file))
                     return
                 }
 
                 if (prepared.update(file, charset)) {
-                    logger.lifecycle('Updating license header in {}', getSimplifiedPath(file))
+                    logger.lifecycle('Updating license header in: {}', getSimplifiedPath(file))
                     didWork = true
                 }
             }
