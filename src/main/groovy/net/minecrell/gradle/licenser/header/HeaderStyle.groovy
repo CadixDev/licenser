@@ -3,23 +3,16 @@ package net.minecrell.gradle.licenser.header
 import java.util.regex.Pattern
 
 enum HeaderStyle {
-    SLASH_STAR(~/^\s*\/\*(?:[^*].*)?$/, ~/\*\/\s*(.*?)$/, '/*', ' *', ' */', 'java', 'groovy', 'scala', 'gradle'),
-    JAVADOC(~/^\s*\/\*\*(?:[^*].*)?$/, ~/\*\/\s*(.*?)$/, '/**', ' *', ' */')
+    BLOCK_COMMENT(~/^\s*\/\*(?:[^*].*)?$/, ~/\*\/\s*(.*?)$/, '/*', ' *', ' */', 'java', 'groovy', 'scala', 'gradle'),
+    JAVADOC(~/^\s*\/\*\*(?:[^*].*)?$/, ~/\*\/\s*(.*?)$/, '/**', ' *', ' */'),
+    HASH(~/^\s*#/, null, '#', '#', '#', 'properties', 'yml', 'yaml')
 
-    private final CommentHeaderFormat format
+    final CommentHeaderFormat format
     private final String[] extensions
 
     HeaderStyle(Pattern start, Pattern end, String firstLine, String prefix, String lastLine, String... extensions) {
         this.format = new CommentHeaderFormat(this.name(), start, end, firstLine, prefix, lastLine)
         this.extensions = extensions
-    }
-
-    CommentHeaderFormat getFormat() {
-        return format
-    }
-
-    List<String> getExtensions() {
-        return this.extensions.toList()
     }
 
     static void register() {

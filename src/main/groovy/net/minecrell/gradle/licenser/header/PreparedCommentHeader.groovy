@@ -56,40 +56,71 @@ class PreparedCommentHeader implements PreparedHeader {
                     return
                 }
 
-                def matcher = line =~ format.end
-                if (matcher) {
-                    def group = matcher.group(1)
-                    if (!group.isEmpty()) {
-                        // There is stuff after the comment has ended, never valid
-                        valid = false
-                        last = group
-                        text = reader.text
-                        return
-                    }
+                if (format.end) {
+                    // Multi-line
+                    def matcher = line =~ format.end
+                    if (matcher) {
+                        if (matcher.hasGroup()) {
+                            def group = matcher.group(1)
+                            if (!group.isEmpty()) {
+                                // There is stuff after the comment has ended, never valid
+                                valid = false
+                                last = group
+                                text = reader.text
+                                return
+                            }
+                        }
 
-                    // Check if really valid
-                    if (valid) {
-                        valid = line == itr.next()
+                        // Check if really valid
                         if (valid) {
-                            while (valid && itr.hasNext()) {
-                                line = reader.readLine()
-                                if (line == null) {
-                                    valid = false
-                                    return
-                                }
+                            valid = line == itr.next()
+                            if (valid) {
+                                while (valid && itr.hasNext()) {
+                                    line = reader.readLine()
+                                    if (line == null) {
+                                        valid = false
+                                        return
+                                    }
 
-                                if (line != itr.next()) {
-                                    valid = false
-                                    last = line
+                                    if (line != itr.next()) {
+                                        valid = false
+                                        last = line
+                                    }
                                 }
+                            }
+                        }
+
+                        break
+                    }
+                } else if (!(line =~ format.start)) {
+                    // Check if really valid
+                    if (valid && itr.hasNext()) {
+                        while (true) {
+                            if (line != itr.next()) {
+                                valid = false
+                                break
+                            }
+
+                            if (!itr.hasNext()) {
+                                break
+                            }
+
+                            line = reader.readLine()
+                            if (line == null) {
+                                valid = false
+                                return
                             }
                         }
                     }
 
-                    text = reader.text
-                    return
+                    if (!valid) {
+                        last = line
+                    }
                 }
             }
+
+            text = reader.text
+            return
         }
 
         if (valid) {
