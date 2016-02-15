@@ -28,7 +28,8 @@ class LicenseTask extends DefaultTask {
     }
 
     FileTree getMatchingFiles() {
-        return this.files.asFileTree.matching(filter)
+        def tree = this.files.asFileTree
+        return filter != null ? tree.matching(filter) : tree
     }
 
     private String projectPath
