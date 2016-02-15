@@ -19,7 +19,7 @@ class PreparedCommentHeader implements PreparedHeader {
         return file.withReader(charset) { BufferedReader reader ->
             boolean result = HeaderHelper.contentStartsWith(reader, this.lines.iterator(), format.skipLine)
             if (result && newLine) {
-                String line = reader.readLine()
+                def line = reader.readLine()
                 result = line != null && line.isEmpty()
             }
             return result
@@ -89,7 +89,9 @@ class PreparedCommentHeader implements PreparedHeader {
                         // Check if really valid
                         if (valid) {
                             valid = line == itr.next()
-                            assert !itr.hasNext(), 'Cannot have lines after end of header'
+                            if (itr.hasNext()) {
+                                valid = false
+                            }
                         }
 
                         last = reader.readLine()
