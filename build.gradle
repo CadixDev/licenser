@@ -10,7 +10,7 @@ plugins {
 }
 
 group = 'net.minecrell'
-version = '0.1-SNAPSHOT'
+version = '0.1'
 description = 'A simple license header manager for Gradle'
 
 sourceCompatibility = '1.6'
