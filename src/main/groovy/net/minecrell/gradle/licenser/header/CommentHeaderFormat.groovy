@@ -26,7 +26,7 @@ class CommentHeaderFormat implements HeaderFormat {
         this.lastLine = lastLine
     }
 
-    protected List<String> format(String text, boolean newLine) {
+    protected List<String> format(String text) {
         ensureAbsent(text, firstLine)
         ensureAbsent(text, lastLine)
 
@@ -37,11 +37,6 @@ class CommentHeaderFormat implements HeaderFormat {
         }
 
         result << lastLine
-
-        if (newLine) {
-            result << ''
-        }
-
         return result
     }
 
@@ -53,7 +48,7 @@ class CommentHeaderFormat implements HeaderFormat {
 
     @Override
     PreparedHeader prepare(String text, boolean newLine) {
-        return new PreparedCommentHeader(this, format(text, newLine))
+        return new PreparedCommentHeader(this, format(text), newLine)
     }
 
 }

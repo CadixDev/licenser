@@ -6,19 +6,24 @@ class PreparedCommentHeader implements PreparedHeader {
 
     final CommentHeaderFormat format
     final List<String> lines
+    final boolean newLine
 
-    PreparedCommentHeader(CommentHeaderFormat format, List<String> lines) {
+    PreparedCommentHeader(CommentHeaderFormat format, List<String> lines, boolean newLine) {
         this.format = format
         this.lines = lines
+        this.newLine = newLine
     }
 
     @Override
     boolean check(File file, String charset) throws IOException {
-        boolean result = false
-        file.withReader(charset) { BufferedReader reader ->
-            result = HeaderHelper.contentStartsWith(reader, this.lines.iterator(), format.skipLine)
+        return file.withReader(charset) { BufferedReader reader ->
+            boolean result = HeaderHelper.contentStartsWith(reader, this.lines.iterator(), format.skipLine)
+            if (result && newLine) {
+                String line = reader.readLine()
+                result = line != null && line.isEmpty()
+            }
+            return result
         }
-        return result
     }
 
     @Override
@@ -84,54 +89,26 @@ class PreparedCommentHeader implements PreparedHeader {
                         // Check if really valid
                         if (valid) {
                             valid = line == itr.next()
-                            if (valid) {
-                                while (valid && itr.hasNext()) {
-                                    line = reader.readLine()
-                                    if (line == null) {
-                                        valid = false
-                                        return
-                                    }
-
-                                    if (line != itr.next()) {
-                                        valid = false
-                                        last = line
-                                    }
-                                }
-
-                                break
-                            }
+                            assert !itr.hasNext(), 'Cannot have lines after end of header'
                         }
 
                         last = reader.readLine()
                         break
                     }
                 } else if (!(line =~ format.start)) {
-                    // Check if really valid
-                    if (valid && itr.hasNext()) {
-                        while (true) {
-                            if (line != itr.next()) {
-                                valid = false
-                                break
-                            }
-
-                            if (!itr.hasNext()) {
-                                break
-                            }
-
-                            line = reader.readLine()
-                            if (line == null) {
-                                valid = false
-                                return
-                            }
-                        }
+                    // If there is something left it is invalid
+                    if (itr.hasNext()) {
+                        valid = false
                     }
 
-                    if (!valid) {
-                        last = line
-                    }
-
+                    last = line
                     break
                 }
+            }
+
+            if (valid && newLine) {
+                // Only valid if there is a new line
+                valid = last != null && last.isEmpty()
             }
 
             text = reader.text
@@ -147,7 +124,10 @@ class PreparedCommentHeader implements PreparedHeader {
         file.withWriter { BufferedWriter writer ->
             before.each writer.&writeLine
             this.lines.each writer.&writeLine
-            if (last != null && !(last.isEmpty() && this.lines.last().isEmpty())) {
+            if (newLine) {
+                writer.newLine()
+            }
+            if (last != null && !(last.isEmpty() && newLine)) {
                 writer.writeLine(last)
             }
             if (text != null) {

@@ -6,7 +6,7 @@ enum HeaderStyle {
     BLOCK_COMMENT(~/^\s*\/\*(?:[^*].*)?$/, ~/\*\/\s*(.*?)$/, null, '/*', ' *', ' */', 'java', 'groovy', 'scala', 'gradle', 'css', 'js'),
     JAVADOC(~/^\s*\/\*\*(?:[^*].*)?$/, ~/\*\/\s*(.*?)$/, null, '/**', ' *', ' */'),
     HASH(~/^\s*#/, null, ~/^\s*#!/, '#', '#', '#', 'properties', 'yml', 'yaml', 'sh'),
-    XML(~/^\s*<!--/, ~/-->\s*(.*?)$/, ~/^\s*<\?xml .*\?>\s*$/, '<!--', ' ', '-->', 'xml', 'xsd', 'xsl', 'fxml', 'dtd', 'html', 'xhtml')
+    XML(~/^\s*<!--/, ~/-->\s*(.*?)$/, ~/^\s*<(?:\?xml .*\?|!DOCTYPE .*)>\s*$/, '<!--', ' ', '-->', 'xml', 'xsd', 'xsl', 'fxml', 'dtd', 'html', 'xhtml')
 
     final CommentHeaderFormat format
     private final String[] extensions
