@@ -41,7 +41,7 @@ class LicenseCheck extends LicenseTask implements VerificationTask {
 
             final def message = "License violations were found: $violators"
             if (ignoreFailures) {
-                logger.error(message)
+                logger.warn(message)
             } else {
                 throw new LicenseViolationException(message)
             }
