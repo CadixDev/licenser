@@ -11,8 +11,8 @@ import org.gradle.api.tasks.SourceSet
 
 class Licenser implements Plugin<Project> {
 
-    private static final String CHECK_TASK = 'licenseCheck'
-    private static final String FORMAT_TASK = 'licenseFormat'
+    private static final String CHECK_TASK = 'checkLicense'
+    private static final String FORMAT_TASK = 'updateLicense'
 
     private Project project
     private LicenseExtension extension
@@ -28,8 +28,10 @@ class Licenser implements Plugin<Project> {
                 sourceSets = project.sourceSets
             }
 
-            def globalCheck = task(CHECK_TASK)
-            def globalFormat = task(FORMAT_TASK)
+            def globalCheck = task(CHECK_TASK + 's')
+            task('licenseCheck', dependsOn: globalCheck)
+            def globalFormat = task(FORMAT_TASK + 's')
+            task('licenseFormat', dependsOn: globalFormat)
 
             // Wait a bit until creating the tasks
             afterEvaluate {
