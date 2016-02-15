@@ -22,6 +22,24 @@ class LicenseExtension implements PatternFilterable {
 
     HeaderFormatRegistry style = new HeaderFormatRegistry()
 
+    LicenseExtension() {
+        // Files without standard comment format
+        exclude '**/*.txt'
+        exclude '**/*.json'
+        exclude '**/*.md'
+
+        // Image files
+        exclude '**/*.jpg'
+        exclude '**/*.png'
+        exclude '**/*.gif'
+        exclude '**/*.bmp'
+        exclude '**/*.ico'
+
+        // Manifest
+        exclude '**/MANIFEST.MF'
+        exclude '**/META-INF/services/**'
+    }
+
     void style(Closure closure) {
         closure.delegate = style
         closure.resolveStrategy = Closure.DELEGATE_FIRST
