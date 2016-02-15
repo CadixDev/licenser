@@ -7,6 +7,8 @@ plugins {
 
     id 'maven-publish'
     id 'com.gradle.plugin-publish' version '0.9.3'
+
+    id 'net.minecrell.licenser' version '0.1'
 }
 
 group = 'net.minecrell'
@@ -18,6 +20,11 @@ targetCompatibility = '1.6'
 
 dependencies {
     compile localGroovy()
+}
+
+license {
+    include '**/*.java'
+    include '**/*.groovy'
 }
 
 task sourceJar(type: Jar) {
