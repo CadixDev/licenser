@@ -3,15 +3,15 @@ package net.minecrell.gradle.licenser.header
 import java.util.regex.Pattern
 
 enum HeaderStyle {
-    BLOCK_COMMENT(~/^\s*\/\*(?:[^*].*)?$/, ~/\*\/\s*(.*?)$/, '/*', ' *', ' */', 'java', 'groovy', 'scala', 'gradle'),
-    JAVADOC(~/^\s*\/\*\*(?:[^*].*)?$/, ~/\*\/\s*(.*?)$/, '/**', ' *', ' */'),
-    HASH(~/^\s*#/, null, '#', '#', '#', 'properties', 'yml', 'yaml')
+    BLOCK_COMMENT(~/^\s*\/\*(?:[^*].*)?$/, ~/\*\/\s*(.*?)$/, null, '/*', ' *', ' */', 'java', 'groovy', 'scala', 'gradle'),
+    JAVADOC(~/^\s*\/\*\*(?:[^*].*)?$/, ~/\*\/\s*(.*?)$/, null, '/**', ' *', ' */'),
+    HASH(~/^\s*#/, null, ~/^\s*#!/, '#', '#', '#', 'properties', 'yml', 'yaml', 'sh')
 
     final CommentHeaderFormat format
     private final String[] extensions
 
-    HeaderStyle(Pattern start, Pattern end, String firstLine, String prefix, String lastLine, String... extensions) {
-        this.format = new CommentHeaderFormat(this.name(), start, end, firstLine, prefix, lastLine)
+    HeaderStyle(Pattern start, Pattern end, Pattern skipLine, String firstLine, String prefix, String lastLine, String... extensions) {
+        this.format = new CommentHeaderFormat(this.name(), start, end, skipLine, firstLine, prefix, lastLine)
         this.extensions = extensions
     }
 

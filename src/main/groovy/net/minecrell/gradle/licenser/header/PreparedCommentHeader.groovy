@@ -16,7 +16,7 @@ class PreparedCommentHeader implements PreparedHeader {
     boolean check(File file, String charset) throws IOException {
         boolean result = false
         file.withReader(charset) { BufferedReader reader ->
-            result = HeaderHelper.contentStartsWith(reader, this.lines.iterator())
+            result = HeaderHelper.contentStartsWith(reader, this.lines.iterator(), format.skipLine)
         }
         return result
     }
@@ -24,13 +24,23 @@ class PreparedCommentHeader implements PreparedHeader {
     @Override
     boolean update(File file, String charset, Runnable callback) throws IOException {
         boolean valid = false
+        List<String> before = []
         String last = null
         String text = null
 
         file.withReader(charset) { BufferedReader reader ->
-            String line = HeaderHelper.skipEmptyLines(reader)
-            if (line == null) {
-                return
+            String line
+            while (true) {
+                line = HeaderHelper.skipEmptyLines(reader)
+                if (line == null) {
+                    return
+                }
+
+                if (!format.skipLine || !(line =~ format.skipLine)) {
+                    break
+                }
+
+                before << line
             }
 
             if (!(line =~ format.start)) {
@@ -87,9 +97,12 @@ class PreparedCommentHeader implements PreparedHeader {
                                         last = line
                                     }
                                 }
+
+                                break
                             }
                         }
 
+                        last = reader.readLine()
                         break
                     }
                 } else if (!(line =~ format.start)) {
@@ -116,6 +129,8 @@ class PreparedCommentHeader implements PreparedHeader {
                     if (!valid) {
                         last = line
                     }
+
+                    break
                 }
             }
 
@@ -130,8 +145,9 @@ class PreparedCommentHeader implements PreparedHeader {
         callback.run()
 
         file.withWriter { BufferedWriter writer ->
-            this.lines.each { writer.writeLine(it) }
-            if (last != null) {
+            before.each writer.&writeLine
+            this.lines.each writer.&writeLine
+            if (last != null && !(last.isEmpty() && this.lines.last().isEmpty())) {
                 writer.writeLine(last)
             }
             if (text != null) {

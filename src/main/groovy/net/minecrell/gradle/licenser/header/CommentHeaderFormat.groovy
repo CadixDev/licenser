@@ -10,15 +10,17 @@ class CommentHeaderFormat implements HeaderFormat {
 
     final Pattern start
     final Pattern end
+    final Pattern skipLine
 
     final String firstLine
     final String prefix
     final String lastLine
 
-    CommentHeaderFormat(String name, Pattern start, Pattern end, String firstLine, String prefix, String lastLine) {
+    CommentHeaderFormat(String name, Pattern start, Pattern end, Pattern skipLine, String firstLine, String prefix, String lastLine) {
         this.name = name
         this.start = start
         this.end = end
+        this.skipLine = skipLine
         this.firstLine = firstLine
         this.prefix = prefix
         this.lastLine = lastLine

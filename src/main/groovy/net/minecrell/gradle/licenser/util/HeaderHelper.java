@@ -3,6 +3,7 @@ package net.minecrell.gradle.licenser.util;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.regex.Pattern;
 
 public final class HeaderHelper {
 
@@ -36,9 +37,13 @@ public final class HeaderHelper {
         return "";
     }
 
-    public static boolean contentStartsWith(BufferedReader reader, Iterator<String> itr) throws IOException {
+    public static boolean contentStartsWith(BufferedReader reader, Iterator<String> itr, Pattern ignored) throws IOException {
         String line;
         while (itr.hasNext() && (line = reader.readLine()) != null) {
+            if (ignored != null && ignored.matcher(line).find()) {
+                continue;
+            }
+
             if (!line.equals(itr.next())) {
                 return false;
             }
