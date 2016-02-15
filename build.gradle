@@ -6,10 +6,12 @@ plugins {
     id 'idea'
 
     id 'maven-publish'
+    id 'com.gradle.plugin-publish' version '0.9.3'
 }
 
 group = 'net.minecrell'
 version = '0.1-SNAPSHOT'
+description = 'A simple license header manager for Gradle'
 
 sourceCompatibility = '1.6'
 targetCompatibility = '1.6'
@@ -26,6 +28,20 @@ task sourceJar(type: Jar) {
 task groovydocJar(type: Jar, dependsOn: groovydoc) {
     classifier = 'groovydoc'
     from groovydoc.destinationDir
+}
+
+pluginBundle {
+    website = 'https://github.com/Minecrell/licenser'
+    vcsUrl = website
+    description = project.description
+    tags = ['license']
+
+    plugins {
+        licenserPlugin {
+            id = 'net.minecrell.licenser'
+            displayName = 'licenser'
+        }
+    }
 }
 
 publishing {
