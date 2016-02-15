@@ -53,7 +53,7 @@ class CommentHeaderFormat implements HeaderFormat {
 
     @Override
     String toString() {
-        return name;
+        return name
     }
 
 }

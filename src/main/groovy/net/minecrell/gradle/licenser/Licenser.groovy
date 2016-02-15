@@ -75,7 +75,7 @@ class Licenser implements Plugin<Project> {
         return (T) project.task(name, type: type) { T task ->
             task.header = expectedHeader
             task.files = sourceSet.allSource
-            task.filter = extension.patternSet
+            task.filter = extension.filter
             task.charset = extension.charset
         }
     }
