@@ -10,7 +10,7 @@ class PreparedCommentHeader implements PreparedHeader {
 
     PreparedCommentHeader(CommentHeaderFormat format, List<String> lines, boolean newLine) {
         this.format = format
-        this.lines = lines
+        this.lines = lines.asImmutable()
         this.newLine = newLine
     }
 
