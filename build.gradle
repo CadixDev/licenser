@@ -23,12 +23,18 @@ task sourceJar(type: Jar) {
     from sourceSets.main.allSource
 }
 
+task groovydocJar(type: Jar, dependsOn: groovydoc) {
+    classifier = 'groovydoc'
+    from groovydoc.destinationDir
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
 
             artifact sourceJar
+            artifact groovydocJar
 
             repositories {
                 maven {
