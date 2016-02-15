@@ -22,7 +22,7 @@ class PreparedCommentHeader implements PreparedHeader {
     }
 
     @Override
-    boolean update(File file, String charset) throws IOException {
+    boolean update(File file, String charset, Closure<File> callback) throws IOException {
         boolean valid = false
         String last = null
         String text = null
@@ -126,6 +126,8 @@ class PreparedCommentHeader implements PreparedHeader {
         if (valid) {
             return false // Nothing to do
         }
+
+        file = callback.call(file)
 
         file.withWriter { BufferedWriter writer ->
             this.lines.each { writer.writeLine(it) }

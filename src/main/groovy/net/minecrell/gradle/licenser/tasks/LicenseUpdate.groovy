@@ -14,6 +14,8 @@ class LicenseUpdate extends LicenseTask {
             return
         }
 
+        // Backup files before modifying them
+        def original = new File(temporaryDir, 'original')
         files.visit { FileVisitDetails details ->
             if (!details.directory) {
                 def file = details.file
@@ -23,7 +25,18 @@ class LicenseUpdate extends LicenseTask {
                     return
                 }
 
-                if (prepared.update(file, charset)) {
+                if (prepared.update(file, charset, { File f ->
+                    def backup = details.relativePath.getFile(original)
+                    if (backup.exists()) {
+                        assert backup.delete(), 'Failed to delete backup file %backup'
+                    } else {
+                        backup.parentFile.mkdirs()
+                    }
+
+                    assert f.renameTo(backup), "Failed to backup file $f to $backup"
+                    assert f.createNewFile(), "Failed to recreate source file $f"
+                    return f
+                })) {
                     logger.lifecycle('Updating license header in: {}', getSimplifiedPath(file))
                     didWork = true
                 }
