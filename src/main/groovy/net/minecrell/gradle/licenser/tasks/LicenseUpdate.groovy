@@ -45,7 +45,7 @@ class LicenseUpdate extends LicenseTask {
         }
 
         if (updated > 0) {
-            logger.lifecycle('{} file(s) updated. A backup of the original files was created in {}', updated, getSimplifiedPath(original))
+            logger.lifecycle('{} license header(s) updated. A backup of the original files was created in {}', updated, getSimplifiedPath(original))
         }
     }
 
