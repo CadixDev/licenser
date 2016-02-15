@@ -72,6 +72,9 @@ class PreparedCommentHeader implements PreparedHeader {
 
                 line = reader.readLine()
                 if (line == null) {
+                    if (format.end) {
+                        throw new IllegalStateException("Failed to find end of block comment in $file")
+                    }
                     valid = false
                     return
                 }
