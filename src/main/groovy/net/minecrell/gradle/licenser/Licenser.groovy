@@ -30,6 +30,7 @@ import net.minecrell.gradle.licenser.tasks.LicenseTask
 import net.minecrell.gradle.licenser.tasks.LicenseUpdate
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.tasks.SourceSet
 
 class Licenser implements Plugin<Project> {
@@ -46,9 +47,9 @@ class Licenser implements Plugin<Project> {
 
         project.with {
             this.extension = extensions.create('license', LicenseExtension)
-            extension.with {
-                header = project.file('LICENSE')
-                sourceSets = project.sourceSets
+            extension.header = project.file('LICENSE')
+            plugins.withType(JavaBasePlugin) {
+                extension.sourceSets = project.sourceSets
             }
 
             def globalCheck = task(CHECK_TASK + 's')
