@@ -16,10 +16,8 @@ enum HeaderStyle {
         this.extensions = extensions
     }
 
-    static void register() {
-        for (HeaderStyle style : values()) {
-            style.extensions.each { HeaderFormats.register(style.format, it) }
-        }
+    void register(HeaderFormatRegistry registry) {
+        extensions.each { registry[it] = this }
     }
 
 }

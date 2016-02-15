@@ -4,13 +4,15 @@ import net.minecrell.gradle.licenser.util.HeaderHelper
 
 class Header {
 
+    private final HeaderFormatRegistry registry
     private final Closure<String> loader
     private final boolean newLine
     private String text
 
     private final Map<HeaderFormat, PreparedHeader> formatted = new HashMap<>()
 
-    Header(Closure<String> loader, boolean newLine) {
+    Header(HeaderFormatRegistry registry, Closure<String> loader, boolean newLine) {
+        this.registry = registry
         this.loader = loader
         this.newLine = newLine
     }
@@ -37,7 +39,7 @@ class Header {
     }
 
     PreparedHeader prepare(String path) {
-        return prepare(HeaderFormats.find(HeaderHelper.getExtension(path)))
+        return prepare(registry[HeaderHelper.getExtension(path)])
     }
 
     PreparedHeader prepare(File file) {

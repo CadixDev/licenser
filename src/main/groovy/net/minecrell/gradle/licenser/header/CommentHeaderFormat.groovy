@@ -51,4 +51,9 @@ class CommentHeaderFormat implements HeaderFormat {
         return new PreparedCommentHeader(this, format(text), newLine)
     }
 
+    @Override
+    String toString() {
+        return name;
+    }
+
 }

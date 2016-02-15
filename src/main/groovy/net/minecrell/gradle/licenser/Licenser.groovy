@@ -35,7 +35,7 @@ class Licenser implements Plugin<Project> {
 
             // Wait a bit until creating the tasks
             afterEvaluate {
-                def header = new Header({
+                def header = new Header(extension.style, {
                     File header = extension.header
                     if (header != null && header.exists()) {
                         def text = header.getText(extension.charset)
@@ -72,11 +72,11 @@ class Licenser implements Plugin<Project> {
     }
 
     private <T extends LicenseTask> T createTask(String name, Class<T> type, Header expectedHeader, SourceSet sourceSet) {
-        return (T) project.task(name, type: type) {
-            header = expectedHeader
-            files = sourceSet.allSource
-            filter = extension
-            charset = extension.charset
+        return (T) project.task(name, type: type) { T task ->
+            task.header = expectedHeader
+            task.files = sourceSet.allSource
+            task.filter = extension.patternSet
+            task.charset = extension.charset
         }
     }
 
