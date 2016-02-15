@@ -29,6 +29,11 @@ class HeaderFormatRegistry extends CaseInsensitiveMap<HeaderFormat> {
     }
 
     @Override
+    Object getProperty(String key) {
+        return get(key)
+    }
+
+    @Override
     void setProperty(String key, Object value) {
         put(key, value)
     }
