@@ -27,9 +27,8 @@ class LicenseTask extends DefaultTask {
         return header.text
     }
 
-    FileTree getFiles() {
-        FileTree files = this.files.asFileTree
-        return files.matching(filter)
+    FileTree getMatchingFiles() {
+        return this.files.asFileTree.matching(filter)
     }
 
     private String projectPath

@@ -19,7 +19,7 @@ class LicenseCheck extends LicenseTask implements VerificationTask {
         }
 
         Set<File> violations = []
-        files.visit { FileVisitDetails details ->
+        matchingFiles.visit { FileVisitDetails details ->
             if (!details.directory) {
                 didWork = true
 

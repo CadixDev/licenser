@@ -16,7 +16,7 @@ class LicenseUpdate extends LicenseTask {
 
         // Backup files before modifying them
         def original = new File(temporaryDir, 'original')
-        files.visit { FileVisitDetails details ->
+        matchingFiles.visit { FileVisitDetails details ->
             if (!details.directory) {
                 def file = details.file
                 def prepared = this.header.prepare(file)
