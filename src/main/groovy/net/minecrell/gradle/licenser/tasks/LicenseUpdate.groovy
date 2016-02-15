@@ -25,7 +25,7 @@ class LicenseUpdate extends LicenseTask {
                     return
                 }
 
-                if (prepared.update(file, charset, { File f ->
+                if (prepared.update(file, charset, {
                     def backup = details.relativePath.getFile(original)
                     if (backup.exists()) {
                         assert backup.delete(), 'Failed to delete backup file %backup'
@@ -33,9 +33,8 @@ class LicenseUpdate extends LicenseTask {
                         backup.parentFile.mkdirs()
                     }
 
-                    assert f.renameTo(backup), "Failed to backup file $f to $backup"
-                    assert f.createNewFile(), "Failed to recreate source file $f"
-                    return f
+                    assert file.renameTo(backup), "Failed to backup file $file to $backup"
+                    assert file.createNewFile(), "Failed to recreate source file $file"
                 })) {
                     logger.lifecycle('Updating license header in: {}', getSimplifiedPath(file))
                     didWork = true
