@@ -4,21 +4,21 @@ import net.minecrell.gradle.licenser.util.HeaderHelper
 
 class PreparedCommentHeader implements PreparedHeader {
 
+    final Header header
     final CommentHeaderFormat format
     final List<String> lines
-    final boolean newLine
 
-    PreparedCommentHeader(CommentHeaderFormat format, List<String> lines, boolean newLine) {
+    PreparedCommentHeader(Header header, CommentHeaderFormat format, List<String> lines) {
+        this.header = header
         this.format = format
-        this.lines = lines.asImmutable()
-        this.newLine = newLine
+        this.lines = lines
     }
 
     @Override
     boolean check(File file, String charset) throws IOException {
         return file.withReader(charset) { BufferedReader reader ->
             boolean result = HeaderHelper.contentStartsWith(reader, this.lines.iterator(), format.skipLine)
-            if (result && newLine) {
+            if (result && header.newLine) {
                 def line = reader.readLine()
                 result = line != null && line.isEmpty()
             }
@@ -30,6 +30,7 @@ class PreparedCommentHeader implements PreparedHeader {
     boolean update(File file, String charset, Runnable callback) throws IOException {
         boolean valid = false
         List<String> before = []
+        List<String> comment = null
         String last = null
         String text = null
 
@@ -54,6 +55,10 @@ class PreparedCommentHeader implements PreparedHeader {
                 return
             }
 
+            if (!header.containsKeyword(line)) {
+                comment = [line]
+            }
+
             valid = true
             def itr = this.lines.iterator()
             while (true) {
@@ -75,14 +80,24 @@ class PreparedCommentHeader implements PreparedHeader {
                     // Multi-line
                     def matcher = line =~ format.end
                     if (matcher) {
+                        // Append comment to buffer if it doesn't contain keyword
+                        if (comment != null) {
+                            if (header.containsKeyword(line)) {
+                                comment = null
+                            } else {
+                                comment << line
+                            }
+                        }
+
                         if (matcher.hasGroup()) {
                             def group = matcher.group(1)
                             if (!group.isEmpty()) {
                                 // There is stuff after the comment has ended, never valid
                                 valid = false
-                                last = group
-                                text = reader.text
-                                return
+                                if (!comment) {
+                                    last = group
+                                }
+                                break
                             }
                         }
 
@@ -106,9 +121,18 @@ class PreparedCommentHeader implements PreparedHeader {
                     last = line
                     break
                 }
+
+                // Append comment to buffer if it doesn't contain keyword
+                if (comment != null) {
+                    if (header.containsKeyword(line)) {
+                        comment = null
+                    } else {
+                        comment << line
+                    }
+                }
             }
 
-            if (valid && newLine) {
+            if (valid && header.newLine) {
                 // Only valid if there is a new line
                 valid = last != null && last.isEmpty()
             }
@@ -126,10 +150,13 @@ class PreparedCommentHeader implements PreparedHeader {
         file.withWriter { BufferedWriter writer ->
             before.each writer.&writeLine
             this.lines.each writer.&writeLine
-            if (newLine) {
+            if (header.newLine) {
                 writer.newLine()
             }
-            if (last != null && !(last.isEmpty() && newLine)) {
+            if (comment != null) {
+                comment.each writer.&writeLine
+            }
+            if (last != null && (comment != null || !(last.isEmpty() && header.newLine))) {
                 writer.writeLine(last)
             }
             if (text != null) {

@@ -58,6 +58,13 @@ class LicenseExtension implements PatternFilterable {
      */
     HeaderFormatRegistry style = new HeaderFormatRegistry()
 
+    /**
+     * The (case-insensitive) keywords that identify a comment as license
+     * header.
+     * By default this includes only the words "Copyright" and "License".
+     */
+    List<String> keywords = ['Copyright', 'License']
+
     LicenseExtension() {
         // Files without standard comment format
         exclude '**/*.txt'

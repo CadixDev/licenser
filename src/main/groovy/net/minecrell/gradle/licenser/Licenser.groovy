@@ -35,7 +35,7 @@ class Licenser implements Plugin<Project> {
 
             // Wait a bit until creating the tasks
             afterEvaluate {
-                def header = new Header(extension.style, {
+                def header = new Header(extension.style, extension.keywords, {
                     File header = extension.header
                     if (header != null && header.exists()) {
                         def text = header.getText(extension.charset)

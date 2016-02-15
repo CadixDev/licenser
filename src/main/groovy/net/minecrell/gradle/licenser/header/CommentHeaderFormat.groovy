@@ -47,8 +47,8 @@ class CommentHeaderFormat implements HeaderFormat {
     }
 
     @Override
-    PreparedHeader prepare(String text, boolean newLine) {
-        return new PreparedCommentHeader(this, format(text), newLine)
+    PreparedHeader prepare(Header header, String text) {
+        return new PreparedCommentHeader(header, this, format(text))
     }
 
     @Override

@@ -4,15 +4,18 @@ import net.minecrell.gradle.licenser.util.HeaderHelper
 
 class Header {
 
-    private final HeaderFormatRegistry registry
+    final HeaderFormatRegistry registry
+    final List<String> keywords
+
     private final Closure<String> loader
-    private final boolean newLine
+    final boolean newLine
     private String text
 
     private final Map<HeaderFormat, PreparedHeader> formatted = new HashMap<>()
 
-    Header(HeaderFormatRegistry registry, Closure<String> loader, boolean newLine) {
+    Header(HeaderFormatRegistry registry, List<String> keywords, Closure<String> loader, boolean newLine) {
         this.registry = registry
+        this.keywords = keywords*.toLowerCase().asImmutable()
         this.loader = loader
         this.newLine = newLine
     }
@@ -20,9 +23,17 @@ class Header {
     String getText() {
         if (this.text == null) {
             this.text = loader.call()
+            if (!containsKeyword(this.text)) {
+                throw new IllegalArgumentException("Header does not contain any of the required keywords: $keywords")
+            }
         }
 
         return this.text
+    }
+
+    boolean containsKeyword(String s) {
+        s = s.toLowerCase()
+        return keywords.any(s.&contains)
     }
 
     PreparedHeader prepare(HeaderFormat format) {
@@ -32,7 +43,7 @@ class Header {
 
         PreparedHeader result = formatted[format]
         if (result == null) {
-            result = format.prepare(getText(), this.newLine)
+            result = format.prepare(this, getText())
             formatted[format] = result
         }
         return result
