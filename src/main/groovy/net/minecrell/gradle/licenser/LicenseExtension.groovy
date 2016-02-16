@@ -101,6 +101,12 @@ class LicenseExtension implements PatternFilterable {
         exclude '**/*.bmp'
         exclude '**/*.ico'
 
+        // Binary files
+        exclude '**/*.zip'
+        exclude '**/*.jar'
+        exclude '**/*.class'
+        exclude '**/*.bin'
+
         // Manifest
         exclude '**/MANIFEST.MF'
         exclude '**/META-INF/services/**'
