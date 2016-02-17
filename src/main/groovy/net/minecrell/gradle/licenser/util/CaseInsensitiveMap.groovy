@@ -25,13 +25,13 @@ package net.minecrell.gradle.licenser.util
 
 class CaseInsensitiveMap<V> extends HashMap<String, V> {
 
-    @Override
-    boolean containsKey(Object key) {
-        return super.containsKey(key.toString().toLowerCase(Locale.ROOT))
-    }
-
     private static String normalizeKey(Object key) {
         return key.toString().toLowerCase(Locale.ROOT)
+    }
+
+    @Override
+    boolean containsKey(Object key) {
+        return super.containsKey(normalizeKey(key))
     }
 
     @Override
