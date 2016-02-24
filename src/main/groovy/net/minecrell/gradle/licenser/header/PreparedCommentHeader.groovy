@@ -41,9 +41,13 @@ class PreparedCommentHeader implements PreparedHeader {
     boolean check(File file, String charset) throws IOException {
         return file.withReader(charset) { BufferedReader reader ->
             boolean result = HeaderHelper.contentStartsWith(reader, this.lines.iterator(), format.skipLine)
-            if (result && header.newLine) {
+            if (result) {
                 def line = reader.readLine()
-                result = line != null && line.isEmpty()
+                if (header.newLine) {
+                    result = line != null && line.isEmpty()
+                } else if (line != null) {
+                    result = !line.isEmpty()
+                }
             }
             return result
         }
@@ -158,9 +162,13 @@ class PreparedCommentHeader implements PreparedHeader {
                 }
             }
 
-            if (valid && header.newLine) {
-                // Only valid if there is a new line
-                valid = last != null && last.isEmpty()
+            if (valid) {
+                if (header.newLine) {
+                    // Only valid if there is a new line
+                    valid = last != null && last.isEmpty()
+                } else if (last != null) {
+                    valid = !last.isEmpty()
+                }
             }
 
             text = reader.text
@@ -182,7 +190,7 @@ class PreparedCommentHeader implements PreparedHeader {
             if (comment != null) {
                 comment.each writer.&writeLine
             }
-            if (last != null && (comment != null || !(last.isEmpty() && header.newLine))) {
+            if (last != null && (comment != null || !last.isEmpty())) {
                 writer.writeLine(last)
             }
             if (text != null) {
