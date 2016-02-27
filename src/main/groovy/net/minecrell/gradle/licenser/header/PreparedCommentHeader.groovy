@@ -56,56 +56,83 @@ class PreparedCommentHeader implements PreparedHeader {
     @Override
     boolean update(File file, String charset, Runnable callback) throws IOException {
         boolean valid = false
+        // The lines skipped before the license header
         List<String> before = []
+        // The comment lines we've read. Important if the comment does not contain
+        // any of the keywords, then we need to write it back to the file.
         List<String> comment = null
+        // The last line we've looked at
         String last = null
+        // The remaining text to write back to the file
         String text = null
 
+        // Open file for verifying the license header and reading the text we
+        // need to append after it
         file.withReader(charset) { BufferedReader reader ->
             String line
             while (true) {
+                // Find first non-empty line
                 line = HeaderHelper.skipEmptyLines(reader)
                 if (line == null) {
-                    return
+                    return // EOF, invalid and done
                 }
 
+                // Unless the line is requested to be skipped by the header we're done
+                // However, some header formats have certain lines that need to be skipped
+                // E.g. for XML the XML document declaration
                 if (!format.skipLine || !(line =~ format.skipLine)) {
                     break
                 }
 
+                // Append the lines we've skipped so we can add them back to the file later
                 before << line
             }
 
+            // If the first line doesn't match the comment start we're done
+            // and the file doesn't have a license header yet
             if (!(line =~ format.start)) {
                 last = line
                 text = reader.text
                 return
             }
 
+            // If the first line does not contain one of our license header
+            // keywords, we need to start collecting all comment lines we've read
             if (!header.containsKeyword(line)) {
                 comment = [line]
             }
 
+            // Now go through the license header and verify it
             valid = true
             def itr = this.lines.iterator()
             while (true) {
+                // No lines left in our expected license header; this comment is invalid
                 if (!itr.hasNext()) {
                     valid = false
                 }
 
+                // Still valid, but next lines doesn't match; invalid comment
                 if (valid && itr.next() != line) {
                     valid = false
                 }
 
+                // Read the next line from the file
                 line = reader.readLine()
                 if (line == null) {
+                    // EOF, but the end comment was yet found
                     if (format.end) {
+                        // Failed to find end of comment. This often means the end
+                        // of comment was simply removed, so instead of wiping the
+                        // whole file simply throw an exception
                         throw new IllegalStateException("Failed to find end of block comment in $file")
                     }
+
+                    // Nothing needed to end a comment: Invalid but fine to continue
                     valid = false
                     return
                 }
 
+                // Only some comment formats have specific patterns for the end of a comment
                 if (format.end) {
                     // Multi-line
                     def matcher = line =~ format.end
@@ -119,6 +146,8 @@ class PreparedCommentHeader implements PreparedHeader {
                             }
                         }
 
+                        // Check for remaining stuff on the comment line
+                        // (We don't want to wipe lines from the file)
                         if (matcher.hasGroup()) {
                             def group = matcher.group(1)
                             if (!group.isEmpty()) {
@@ -131,23 +160,27 @@ class PreparedCommentHeader implements PreparedHeader {
                             }
                         }
 
-                        // Check if really valid
+                        // Check if really, really valid
                         if (valid) {
                             valid = line == itr.next()
+                            // There are still lines left that would need to come, invalid header
                             if (itr.hasNext()) {
                                 valid = false
                             }
                         }
 
+                        // Read one more line so we can check for new lines
                         last = reader.readLine()
                         break
                     }
                 } else if (!(line =~ format.start)) {
-                    // If there is something left it is invalid
+                    // There are still lines left that would need to come, invalid header
                     if (itr.hasNext()) {
                         valid = false
                     }
 
+                    // The next line is actually the current one, because it is no longer
+                    // part of the comment
                     last = line
                     break
                 }
@@ -162,8 +195,10 @@ class PreparedCommentHeader implements PreparedHeader {
                 }
             }
 
+            // Look more carefully at the new lines
             if (valid) {
                 if (last != null && last.isEmpty()) {
+                    // Only valid if we actually wanted a new line after the header
                     valid = header.newLine
 
                     // Skip empty lines
@@ -172,32 +207,52 @@ class PreparedCommentHeader implements PreparedHeader {
                         valid = false
                     }
                 } else if (header.newLine) {
+                    // Missing new line after header, invalid
                     valid = false
                 }
             }
 
+            // Read the remaining text from the file so we can add it back later
             text = reader.text
             return
         }
 
+        // License header is valid, nothing to do
         if (valid) {
-            return false // Nothing to do
+            return false
         }
 
+        // Run callback (used for creating a backup of the files)
         callback.run()
 
+        // Open file for updating license header
         file.withWriter { BufferedWriter writer ->
+
+            // Write lines that were skipped before the header
             before.each writer.&writeLine
+
+            // Write actual license header
             this.lines.each writer.&writeLine
+
+            // Add new line if requested
             if (header.newLine) {
                 writer.newLine()
             }
+
+            // Add comment that was collected but did not match a valid license header
+            // (Did not contain any of the defined keywords)
             if (comment != null) {
                 comment.each writer.&writeLine
             }
+
+            // Write the last line we have looked at additionally
+            // (Only if we have a captured (non-license header) comment before this
+            // or it is not empty, we handle the new lines for license header ourselves)
             if (last != null && (comment != null || !last.isEmpty())) {
                 writer.writeLine(last)
             }
+
+            // Write the remaining file
             if (text != null) {
                 writer.write(text)
             }
