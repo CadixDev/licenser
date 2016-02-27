@@ -197,17 +197,19 @@ class PreparedCommentHeader implements PreparedHeader {
 
             // Look more carefully at the new lines
             if (valid) {
-                if (last != null && last.isEmpty()) {
-                    // Only valid if we actually wanted a new line after the header
-                    valid = header.newLine
+                if (header.newLine) {
+                    // Only valid if next line is empty
+                    valid = last != null && last.isEmpty()
+                } else if (last != null) {
+                    // Only valid if next line is NOT empty
+                    valid = !HeaderHelper.isBlank(last)
+                }
+            }
 
-                    // Skip empty lines
-                    while ((last = reader.readLine()) != null && last.isEmpty()) {
-                        // Duplicate new lines, NEVER valid
-                        valid = false
-                    }
-                } else if (header.newLine) {
-                    // Missing new line after header, invalid
+            if (HeaderHelper.isBlank(last)) {
+                // Skip empty lines
+                while ((last = reader.readLine()) != null && HeaderHelper.isBlank(last)) {
+                    // Duplicate new lines, NEVER valid
                     valid = false
                 }
             }
