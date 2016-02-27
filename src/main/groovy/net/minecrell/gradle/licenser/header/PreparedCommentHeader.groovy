@@ -167,7 +167,12 @@ class PreparedCommentHeader implements PreparedHeader {
                     // Only valid if there is a new line
                     valid = last != null && last.isEmpty()
                 } else if (last != null) {
-                    valid = !last.isEmpty()
+                    if (last.isEmpty()) {
+                        valid = false
+                        // Skip empty lines
+                        while ((last = reader.readLine()) != null && last.isEmpty()) {
+                        }
+                    }
                 }
             }
 
