@@ -228,7 +228,7 @@ class PreparedCommentHeader implements PreparedHeader {
         callback.run()
 
         // Open file for updating license header
-        file.withWriter { BufferedWriter writer ->
+        file.withWriter(charset) { BufferedWriter writer ->
 
             // Write lines that were skipped before the header
             before.each writer.&writeLine
