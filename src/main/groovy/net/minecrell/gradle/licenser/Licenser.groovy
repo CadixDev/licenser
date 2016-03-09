@@ -23,6 +23,8 @@
 
 package net.minecrell.gradle.licenser
 
+import static org.gradle.api.plugins.JavaBasePlugin.CHECK_TASK_NAME
+
 import groovy.text.SimpleTemplateEngine
 import net.minecrell.gradle.licenser.header.Header
 import net.minecrell.gradle.licenser.tasks.LicenseCheck
@@ -56,6 +58,9 @@ class Licenser implements Plugin<Project> {
             task('licenseCheck', dependsOn: globalCheck)
             def globalFormat = task(FORMAT_TASK + 's')
             task('licenseFormat', dependsOn: globalFormat)
+
+            // Add license check to task to verification lifecycle
+            project.tasks[CHECK_TASK_NAME].dependsOn globalCheck
 
             // Wait a bit until creating the tasks
             afterEvaluate {
