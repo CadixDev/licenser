@@ -59,8 +59,9 @@ class Licenser implements Plugin<Project> {
             def globalFormat = task(FORMAT_TASK + 's')
             task('licenseFormat', dependsOn: globalFormat)
 
-            // Add license check to task to verification lifecycle
-            project.tasks[CHECK_TASK_NAME].dependsOn globalCheck
+            afterEvaluate {
+                project.tasks.findByName(CHECK_TASK_NAME)?.dependsOn globalCheck
+            }
 
             // Wait a bit until creating the tasks
             afterEvaluate {
