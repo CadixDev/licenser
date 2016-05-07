@@ -24,6 +24,7 @@
 package net.minecrell.gradle.licenser
 
 import net.minecrell.gradle.licenser.header.HeaderFormatRegistry
+import org.gradle.api.Incubating
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.util.PatternFilterable
 import org.gradle.api.tasks.util.PatternSet
@@ -59,6 +60,15 @@ class LicenseExtension implements PatternFilterable {
      * By default this includes all source sets of the project.
      */
     Collection<SourceSet> sourceSets
+
+    /**
+     * The Android source sets to scan for files with license headers.
+     * By default this includes all source sets of the project.
+     *
+     * <p><b>Note:</b> This is only used when the Android Gradle plugin is applied.</p>
+     */
+    @Incubating
+    Collection androidSourceSets
 
     /**
      * The charset to read/write the files with.

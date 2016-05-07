@@ -32,6 +32,7 @@ import net.minecrell.gradle.licenser.tasks.LicenseTask
 import net.minecrell.gradle.licenser.tasks.LicenseUpdate
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.file.FileCollection
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.tasks.SourceSet
 
@@ -39,6 +40,7 @@ class Licenser implements Plugin<Project> {
 
     private static final String CHECK_TASK = 'checkLicense'
     private static final String FORMAT_TASK = 'updateLicense'
+    private static final String ANDROID_TASK = 'Android'
 
     private Project project
     private LicenseExtension extension
@@ -52,6 +54,12 @@ class Licenser implements Plugin<Project> {
             extension.header = project.file('LICENSE')
             plugins.withType(JavaBasePlugin) {
                 extension.sourceSets = project.sourceSets
+            }
+
+            ['com.android.library', 'com.android.application'].each {
+                plugins.withId(it) {
+                    extension.androidSourceSets = android.sourceSets
+                }
             }
 
             def globalCheck = task(CHECK_TASK + 's')
@@ -84,10 +92,17 @@ class Licenser implements Plugin<Project> {
                 }, extension.newLine)
 
                 extension.sourceSets.each {
-                    def check = createTask(it.getTaskName(CHECK_TASK, null), LicenseCheck, header, it)
+                    def check = createTask(CHECK_TASK, LicenseCheck, header, it)
                     check.ignoreFailures = extension.ignoreFailures
                     globalCheck.dependsOn check
-                    globalFormat.dependsOn createTask(it.getTaskName(FORMAT_TASK, null), LicenseUpdate, header, it)
+                    globalFormat.dependsOn createTask(FORMAT_TASK, LicenseUpdate, header, it)
+                }
+
+                extension.androidSourceSets.each {
+                    def check = createAndroidTask(CHECK_TASK, LicenseCheck, header, it)
+                    check.ignoreFailures = extension.ignoreFailures
+                    globalCheck.dependsOn check
+                    globalFormat.dependsOn createAndroidTask(FORMAT_TASK, LicenseUpdate, header, it)
                 }
             }
         }
@@ -102,9 +117,18 @@ class Licenser implements Plugin<Project> {
     }
 
     private <T extends LicenseTask> T createTask(String name, Class<T> type, Header expectedHeader, SourceSet sourceSet) {
+        return makeTask(sourceSet.getTaskName(name, null), type, expectedHeader, sourceSet.allSource)
+    }
+
+    private <T extends LicenseTask> T createAndroidTask(String name, Class<T> type, Header expectedHeader, Object sourceSet) {
+        return makeTask(name + ANDROID_TASK + sourceSet.name.capitalize(), type, expectedHeader,
+                project.files(sourceSet.java.sourceFiles, sourceSet.res.sourceFiles))
+    }
+
+    private <T extends LicenseTask> T makeTask(String name, Class<T> type, Header expectedHeader, FileCollection files) {
         return (T) project.task(name, type: type) { T task ->
             task.header = expectedHeader
-            task.files = sourceSet.allSource
+            task.files = files
             task.filter = extension.filter
             task.charset = extension.charset
         }
