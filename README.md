@@ -15,7 +15,7 @@ For a simple project you only need to apply the licenser plugin to your project:
 
 ```gradle
 plugins {
-    id 'net.minecrell.licenser' version '0.1.5'
+    id 'net.minecrell.licenser' version '0.2'
 }
 ```
 
@@ -81,7 +81,7 @@ The plugin can be configured using the `license` extension on the project.
 
         // Ignore failures and only print a warning on license violations
         ignoreFailures = true
-        
+
         // Read/write files with platform charset (Default: UTF-8)
         charset = Charset.defaultCharset().name()
     }
