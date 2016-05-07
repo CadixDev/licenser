@@ -1,12 +1,6 @@
 # licenser
 licenser is a simple license header manager for Gradle. It can automatically ensure that the source files contain a predefined license header and optionally generate them automatically using a Gradle task. It provides several options as configuration (e.g. variables in the license header, included file types, style of license header) so it can be customized for each project.
 
-**Note:** licenser is still in **alpha**. It creates a backup of each file before applying the license header. Nevertheless, it is theoretically possible certain parts of the source code get lost when updating the license headers.
-
-#### Differences to [license-gradle-plugin](https://github.com/hierynomus/license-gradle-plugin)
-- **No dependencies (except Gradle)**: the license-gradle-plugin is based on the license-maven-plugin internally so it depends on some parts of the Maven distribution that need to be downloaded first
-- **Less features, more lightweight**: licenser only offers the most common features needed for projects to stay simple and lightweight. The license-gradle-plugin provides more features with a certain overhead
-
 ## Features
 - Apply pre-defined license header in a file to the source files of the source sets
 - Apply license header only to certain files (include/exclude possible)
@@ -14,6 +8,7 @@ licenser is a simple license header manager for Gradle. It can automatically ens
 - Select the source sets to apply the license headers to
 - Choose from a pre-defined set of license header styles and assign them to certain extensions
 - **Maybe Soon(TM)**: Define custom license header styles
+- Support for Android projects
 
 ## Usage
 For a simple project you only need to apply the licenser plugin to your project:
@@ -34,6 +29,8 @@ This will apply the `LICENSE` file found in the project directory to all common 
 |`updateLicenses`|Updates the license headers in the selected source files. Will create a backup in `build/tmp/updateLicense<SourceSet>/original`.|
 |`checkLicense<SourceSet>`|Verifies the license headers for the specified source set.|
 |`updateLicense<SourceSet>`|Updates the license headers in the specified source set. Will create a backup in `build/tmp/updateLicense<SourceSet>/original`.|
+|`checkLicenseAndroid<SourceSet>`|Same as `checkLicense<SourceSet>`, but for Android source sets.|
+|`updateLicenseAndroid<SourceSet>`|Same as `updateLicense<SourceSet>`, but for Android source sets.|
 |`licenseCheck`|Alias for `checkLicenses`|
 |`licenseFormat`|Alias for `updateLicenses`|
 
@@ -78,7 +75,10 @@ The plugin can be configured using the `license` extension on the project.
     license {
         // Apply licenses only to main source set
         sourceSets = [project.sourceSets.main]
-        
+
+        // Apply licenses only to certain source sets on Android
+        androidSourceSets = [android.sourceSets.main]
+
         // Ignore failures and only print a warning on license violations
         ignoreFailures = true
         
