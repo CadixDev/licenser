@@ -206,7 +206,7 @@ class PreparedCommentHeader implements PreparedHeader {
                 }
             }
 
-            if (HeaderHelper.isBlank(last)) {
+            if (last != null && HeaderHelper.isBlank(last)) {
                 // Skip empty lines
                 while ((last = reader.readLine()) != null && HeaderHelper.isBlank(last)) {
                     // Duplicate new lines, NEVER valid
@@ -214,8 +214,10 @@ class PreparedCommentHeader implements PreparedHeader {
                 }
             }
 
-            // Read the remaining text from the file so we can add it back later
-            text = reader.text
+            if (last != null) {
+                // Read the remaining text from the file so we can add it back later
+                text = reader.text
+            }
             return
         }
 
