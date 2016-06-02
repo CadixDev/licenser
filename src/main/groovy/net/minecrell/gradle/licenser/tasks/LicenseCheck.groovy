@@ -45,16 +45,21 @@ class LicenseCheck extends LicenseTask implements VerificationTask {
         matchingFiles.visit { FileVisitDetails details ->
             if (!details.directory) {
                 didWork = true
-
                 def file = details.file
-                def prepared = this.header.prepare(file)
-                if (prepared == null) {
-                    logger.warn("No matching header format found for file {}", getSimplifiedPath(file))
-                    return
-                }
 
-                if (!prepared.check(file, charset)) {
+                try {
+                    def prepared = this.header.prepare(file)
+                    if (prepared == null) {
+                        logger.warn('No matching header format found for {}', getSimplifiedPath(file))
+                        return
+                    }
+
+                    if (!prepared.check(file, charset)) {
+                        violations.add(file)
+                    }
+                } catch (Exception e) {
                     violations.add(file)
+                    logger.error("Failed to check license header of ${getSimplifiedPath(file)}", e)
                 }
             }
         }

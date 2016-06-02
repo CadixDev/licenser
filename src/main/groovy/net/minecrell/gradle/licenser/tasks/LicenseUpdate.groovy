@@ -23,6 +23,7 @@
 
 package net.minecrell.gradle.licenser.tasks
 
+import org.gradle.api.GradleException
 import org.gradle.api.file.FileVisitDetails
 import org.gradle.api.tasks.TaskAction
 
@@ -40,35 +41,47 @@ class LicenseUpdate extends LicenseTask {
         // Backup files before modifying them
         def original = new File(temporaryDir, 'original')
         def updated = 0
+        def failed = false
+
         matchingFiles.visit { FileVisitDetails details ->
             if (!details.directory) {
                 def file = details.file
-                def prepared = this.header.prepare(file)
-                if (prepared == null) {
-                    logger.warn("No matching header format found for file: {}", getSimplifiedPath(file))
-                    return
-                }
 
-                if (prepared.update(file, charset, {
-                    def backup = details.relativePath.getFile(original)
-                    if (backup.exists()) {
-                        assert backup.delete(), "Failed to delete backup file $backup"
-                    } else {
-                        backup.parentFile.mkdirs()
+                try {
+                    def prepared = this.header.prepare(file)
+                    if (prepared == null) {
+                        logger.warn("No matching header format found for {}", getSimplifiedPath(file))
+                        return
                     }
 
-                    assert file.renameTo(backup), "Failed to backup file $file to $backup"
-                    assert file.createNewFile(), "Failed to recreate source file $file"
-                })) {
-                    updated++
-                    logger.lifecycle('Updating license header in: {}', getSimplifiedPath(file))
-                    didWork = true
+                    if (prepared.update(file, charset, {
+                        def backup = details.relativePath.getFile(original)
+                        if (backup.exists()) {
+                            assert backup.delete(), "Failed to delete backup file: $backup"
+                        } else {
+                            backup.parentFile.mkdirs()
+                        }
+
+                        assert file.renameTo(backup), "Failed to backup file $file to $backup"
+                        assert file.createNewFile(), "Failed to recreate source file: $file"
+                    })) {
+                        updated++
+                        logger.lifecycle('Updating license header in {}', getSimplifiedPath(file))
+                        didWork = true
+                    }
+                } catch (Exception e) {
+                    logger.error("Failed to update license header in ${getSimplifiedPath(file)}", e)
+                    failed = true
                 }
             }
         }
 
         if (updated > 0) {
             logger.lifecycle('{} license header(s) updated. A backup of the original file(s) was created in {}', updated, getSimplifiedPath(original))
+        }
+
+        if (failed) {
+            throw new GradleException('One or more license headers could not be successfully updated')
         }
     }
 
