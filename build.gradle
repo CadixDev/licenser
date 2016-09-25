@@ -8,11 +8,11 @@ plugins {
     id 'maven-publish'
     id 'com.gradle.plugin-publish' version '0.9.6'
 
-    id 'net.minecrell.licenser' version '0.2.1'
+    id 'net.minecrell.licenser' version '0.3'
 }
 
 group = 'net.minecrell'
-version = '0.3-SNAPSHOT'
+version = '0.3'
 description = 'A simple license header manager for Gradle'
 
 sourceCompatibility = '1.6'
