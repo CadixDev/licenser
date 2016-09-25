@@ -124,7 +124,7 @@ class Licenser implements Plugin<Project> {
 
     private <T extends LicenseTask> T createAndroidTask(String name, Class<T> type, List<Header> headers, Object sourceSet) {
         return makeTask(name + ANDROID_TASK + sourceSet.name.capitalize(), type, headers,
-                project.files(sourceSet.java.sourceFiles, sourceSet.res.sourceFiles))
+                project.files(sourceSet.java.sourceFiles, sourceSet.res.sourceFiles, sourceSet.manifest.srcFile))
     }
 
     private <T extends LicenseTask> T makeTask(String name, Class<T> type, List<Header> headers, FileCollection files) {
