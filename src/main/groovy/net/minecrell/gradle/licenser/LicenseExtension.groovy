@@ -25,35 +25,17 @@ package net.minecrell.gradle.licenser
 
 import net.minecrell.gradle.licenser.header.HeaderFormatRegistry
 import org.gradle.api.Incubating
+import org.gradle.api.Project
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.util.PatternFilterable
 import org.gradle.api.tasks.util.PatternSet
+import org.gradle.util.ConfigureUtil
 
 /**
  * Represents the Gradle extension for configuring the settings for the
  * {@link Licenser} plugin.
  */
-class LicenseExtension implements PatternFilterable {
-
-    /**
-     * The filter to apply to the source files of the {@link #sourceSets}.
-     * By default this only includes a few excludes for binary files or files
-     * without standardized comment formats.
-     */
-    @Delegate
-    PatternFilterable filter = new PatternSet()
-
-    /**
-     * The path to the file containing the license header.
-     * By default this is the {@code LICENSE} file in the project directory.
-     */
-    File header
-
-    /**
-     * Whether to insert an empty line after the license header.
-     * By default this is {@code true}.
-     */
-    boolean newLine = true
+class LicenseExtension extends LicenseProperties {
 
     /**
      * The source sets to scan for files with license headers.
@@ -98,7 +80,19 @@ class LicenseExtension implements PatternFilterable {
      */
     List<String> keywords = ['Copyright', 'License']
 
+    /**
+     * Additional conditional {@link LicenseProperties} matching a subset of
+     * the files in the specified {@link #sourceSets}.
+     */
+    final List<LicenseProperties> conditionalProperties = []
+
     LicenseExtension() {
+        super(new PatternSet())
+
+        // Defaults
+        newLine = true
+        charset = 'UTF-8'
+
         // Files without standard comment format
         exclude '**/*.txt'
         exclude '**/*.json'
@@ -123,14 +117,42 @@ class LicenseExtension implements PatternFilterable {
     }
 
     /**
-     * Configures the license styles using the specified closure.
+     * Adds a new conditional license header that will be applied to all matching files.
+     *
+     * @param args A map definition of the pattern, similar to {@link Project#fileTree(Map)}
+     * @param closure The closure that configures the license header
+     */
+    void matching(Map<String, ?> args, @DelegatesTo(LicenseProperties) Closure closure) {
+        matching(ConfigureUtil.configureByMap(args, new PatternSet()), closure)
+    }
+
+    /**
+     * Adds a new conditional license header that will be applied to all matching files.
+     *
+     * @param patternClosure A closure that configures the {@link PatternFilterable}
+     * @param configureClosure The closure that configures the license header
+     */
+    void matching(@DelegatesTo(PatternFilterable) Closure patternClosure, @DelegatesTo(LicenseProperties) Closure configureClosure) {
+        matching(ConfigureUtil.configure(patternClosure, new PatternSet()), configureClosure)
+    }
+
+    /**
+     * Adds a new conditional license header that will be applied to all matching files.
+     *
+     * @param pattern The pattern that matches the files
+     * @param closure The closure that configures the license header
+     */
+    void matching(PatternSet pattern, @DelegatesTo(LicenseProperties) Closure closure) {
+        conditionalProperties.add(ConfigureUtil.configure(closure, new LicenseProperties(pattern)))
+    }
+
+    /**
+     * Configures the license styles using the specified {@link Closure}.
      *
      * @param closure The closure to apply to the style
      */
-    void style(Closure closure) {
-        closure.delegate = style
-        closure.resolveStrategy = Closure.DELEGATE_FIRST
-        closure.call(style)
+    void style(@DelegatesTo(HeaderFormatRegistry) Closure closure) {
+        ConfigureUtil.configure(closure, style)
     }
 
 }

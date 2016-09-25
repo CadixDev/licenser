@@ -35,6 +35,7 @@ import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.tasks.SourceSet
+import org.gradle.api.tasks.util.PatternSet
 
 class Licenser implements Plugin<Project> {
 
@@ -73,61 +74,62 @@ class Licenser implements Plugin<Project> {
 
             // Wait a bit until creating the tasks
             afterEvaluate {
-                def header = new Header(extension.style, extension.keywords, {
-                    File header = extension.header
-                    if (header != null && header.exists()) {
-                        def text = header.getText(extension.charset)
-
-                        Map<String, String> properties = extension.ext.properties
-                        if (properties != null && !properties.isEmpty()) {
-                            def engine = new SimpleTemplateEngine()
-                            def template = engine.createTemplate(text).make(properties)
-                            text = template.toString()
-                        }
-
-                        return text
-                    }
-
-                    return ""
-                }, extension.newLine)
+                extension.conditionalProperties.listIterator()
+                def headers = []
+                extension.conditionalProperties.reverseEach {
+                    headers << prepareHeader(extension, it)
+                }
+                headers << prepareHeader(extension, extension)
 
                 extension.sourceSets.each {
-                    def check = createTask(CHECK_TASK, LicenseCheck, header, it)
+                    def check = createTask(CHECK_TASK, LicenseCheck, headers, it)
                     check.ignoreFailures = extension.ignoreFailures
                     globalCheck.dependsOn check
-                    globalFormat.dependsOn createTask(FORMAT_TASK, LicenseUpdate, header, it)
+                    globalFormat.dependsOn createTask(FORMAT_TASK, LicenseUpdate, headers, it)
                 }
 
                 extension.androidSourceSets.each {
-                    def check = createAndroidTask(CHECK_TASK, LicenseCheck, header, it)
+                    def check = createAndroidTask(CHECK_TASK, LicenseCheck, headers, it)
                     check.ignoreFailures = extension.ignoreFailures
                     globalCheck.dependsOn check
-                    globalFormat.dependsOn createAndroidTask(FORMAT_TASK, LicenseUpdate, header, it)
+                    globalFormat.dependsOn createAndroidTask(FORMAT_TASK, LicenseUpdate, headers, it)
                 }
             }
         }
     }
 
-    Project getProject() {
-        project
+    private static Header prepareHeader(LicenseExtension extension, LicenseProperties properties) {
+        return new Header(extension.style, extension.keywords, {
+            File header = properties.header ?: extension.header
+            if (header != null && header.exists()) {
+                def text = header.getText(extension.charset)
+
+                Map<String, String> props = extension.ext.properties
+                if (props) {
+                    def engine = new SimpleTemplateEngine()
+                    def template = engine.createTemplate(text).make(props)
+                    text = template.toString()
+                }
+
+                return text
+            }
+
+            return ""
+        }, (PatternSet) properties.filter, properties.newLine ?: extension.newLine,)
     }
 
-    LicenseExtension getExtension() {
-        extension
+    private <T extends LicenseTask> T createTask(String name, Class<T> type, List<Header> headers, SourceSet sourceSet) {
+        return makeTask(sourceSet.getTaskName(name, null), type, headers, sourceSet.allSource)
     }
 
-    private <T extends LicenseTask> T createTask(String name, Class<T> type, Header expectedHeader, SourceSet sourceSet) {
-        return makeTask(sourceSet.getTaskName(name, null), type, expectedHeader, sourceSet.allSource)
-    }
-
-    private <T extends LicenseTask> T createAndroidTask(String name, Class<T> type, Header expectedHeader, Object sourceSet) {
-        return makeTask(name + ANDROID_TASK + sourceSet.name.capitalize(), type, expectedHeader,
+    private <T extends LicenseTask> T createAndroidTask(String name, Class<T> type, List<Header> headers, Object sourceSet) {
+        return makeTask(name + ANDROID_TASK + sourceSet.name.capitalize(), type, headers,
                 project.files(sourceSet.java.sourceFiles, sourceSet.res.sourceFiles))
     }
 
-    private <T extends LicenseTask> T makeTask(String name, Class<T> type, Header expectedHeader, FileCollection files) {
+    private <T extends LicenseTask> T makeTask(String name, Class<T> type, List<Header> headers, FileCollection files) {
         return (T) project.task(name, type: type) { T task ->
-            task.header = expectedHeader
+            task.headers = headers
             task.files = files
             task.filter = extension.filter
             task.charset = extension.charset

@@ -24,6 +24,10 @@
 package net.minecrell.gradle.licenser.header
 
 import net.minecrell.gradle.licenser.util.HeaderHelper
+import org.gradle.api.file.FileTreeElement
+import org.gradle.api.specs.Spec
+import org.gradle.api.specs.Specs
+import org.gradle.api.tasks.util.PatternSet
 
 class Header {
 
@@ -31,15 +35,18 @@ class Header {
     final List<String> keywords
 
     private final Closure<String> loader
+    final Spec<FileTreeElement> filter
+
     final boolean newLine
     private String text
 
-    private final Map<HeaderFormat, PreparedHeader> formatted = new HashMap<>()
+    private final Map<HeaderFormat, PreparedHeader> formatted = new IdentityHashMap<>()
 
-    Header(HeaderFormatRegistry registry, List<String> keywords, Closure<String> loader, boolean newLine) {
+    Header(HeaderFormatRegistry registry, List<String> keywords, Closure<String> loader, PatternSet filter, boolean newLine) {
         this.registry = registry
         this.keywords = keywords*.toLowerCase().asImmutable()
         this.loader = loader
+        this.filter = filter?.asSpec ?: Specs.satisfyAll()
         this.newLine = newLine
     }
 

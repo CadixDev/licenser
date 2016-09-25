@@ -36,8 +36,7 @@ class LicenseCheck extends LicenseTask implements VerificationTask {
     void checkFiles() {
         didWork = false
 
-        def header = this.header
-        if (header.text.empty) {
+        if (headers.size() == 1 && headers.first().text.empty) {
             return
         }
 
@@ -48,9 +47,8 @@ class LicenseCheck extends LicenseTask implements VerificationTask {
                 def file = details.file
 
                 try {
-                    def prepared = this.header.prepare(file)
+                    def prepared = prepareMatchingHeader(details, file)
                     if (prepared == null) {
-                        logger.warn('No matching header format found for {}', getSimplifiedPath(file))
                         return
                     }
 

@@ -24,9 +24,11 @@
 package net.minecrell.gradle.licenser.tasks
 
 import net.minecrell.gradle.licenser.header.Header
+import net.minecrell.gradle.licenser.header.PreparedHeader
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileTree
+import org.gradle.api.file.FileTreeElement
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.SkipWhenEmpty
@@ -35,7 +37,7 @@ import org.gradle.api.tasks.util.PatternFilterable
 class LicenseTask extends DefaultTask {
 
     @Input
-    Header header
+    List<Header> headers
 
     @InputFiles
     @SkipWhenEmpty
@@ -45,14 +47,33 @@ class LicenseTask extends DefaultTask {
 
     String charset
 
-    @Input
-    String getFormattedHeader() {
-        return header.text
-    }
-
     FileTree getMatchingFiles() {
         def tree = this.files.asFileTree
         return filter != null ? tree.matching(filter) : tree
+    }
+
+    protected PreparedHeader prepareMatchingHeader(FileTreeElement element, File file) {
+        def header = getMatchingHeader(element)
+        if (header == null) {
+            logger.warn("No matching header found for {}", getSimplifiedPath(file))
+            return null
+        }
+
+        if (header.text.empty) {
+            return null
+        }
+
+        def prepared = header.prepare(file)
+        if (prepared == null) {
+            logger.warn("No matching header format found for {}", getSimplifiedPath(file))
+            return null
+        }
+
+        return prepared
+    }
+
+    protected Header getMatchingHeader(FileTreeElement element) {
+        return headers.find { it.filter.isSatisfiedBy(element) }
     }
 
     private String projectPath
