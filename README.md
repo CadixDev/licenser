@@ -4,10 +4,7 @@ licenser is a simple license header manager for Gradle. It can automatically ens
 ## Features
 - Apply pre-defined license header in a file to the source files of the source sets
 - Apply license header only to certain files (include/exclude possible)
-- Insert a blank new line after the license header
-- Select the source sets to apply the license headers to
-- Choose from a pre-defined set of license header styles and assign them to certain extensions
-- **Maybe Soon(TM)**: Define custom license header styles
+- Apply special license headers to matching files  
 - Support for Android projects
 
 ## Usage
@@ -58,6 +55,21 @@ The plugin can be configured using the `license` extension on the project.
         include '**/*.java' // Apply license header ONLY to Java files
         // OR
         exclude '**/*.properties' // Apply license header NOT to properties files
+    }
+    ```
+- **Apply special license header to some matching files:**
+
+    ```gradle
+    license {
+        // Apply special license header to one source file
+        matching('**/ThirdPartyLibrary.java') {
+            header = file('THIRDPARTY-LICENSE.txt')
+        }
+        
+        // Apply special license header to matching source files
+        matching(includes: ['**/thirdpartylibrary/**', '**/ThirdPartyLibrary.java']) {
+            header = file('THIRDPARTY-LICENSE.txt')
+        }
     }
     ```
 - **Manage file extension to license header styles:**
