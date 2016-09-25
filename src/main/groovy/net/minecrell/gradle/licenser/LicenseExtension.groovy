@@ -119,6 +119,16 @@ class LicenseExtension extends LicenseProperties {
     /**
      * Adds a new conditional license header that will be applied to all matching files.
      *
+     * @param include A single include pattern
+     * @param closure The closure that configures the license header
+     */
+    void matching(String include, @DelegatesTo(LicenseProperties) Closure closure) {
+        matching(new PatternSet().include(include), closure)
+    }
+
+    /**
+     * Adds a new conditional license header that will be applied to all matching files.
+     *
      * @param args A map definition of the pattern, similar to {@link Project#fileTree(Map)}
      * @param closure The closure that configures the license header
      */
