@@ -6,7 +6,7 @@ plugins {
     id 'idea'
 
     id 'maven-publish'
-    id 'com.gradle.plugin-publish' version '0.9.3'
+    id 'com.gradle.plugin-publish' version '0.9.6'
 
     id 'net.minecrell.licenser' version '0.2.1'
 }
@@ -69,5 +69,5 @@ publishing {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.13'
+    gradleVersion = '2.14.1'
 }
