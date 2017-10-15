@@ -90,7 +90,7 @@ class PreparedCommentHeader implements PreparedHeader {
 
             // If the first line doesn't match the comment start we're done
             // and the file doesn't have a license header yet
-            if (!(line =~ format.start)) {
+            if (!(line =~ format.start) || (format.end && line =~ format.end)) {
                 last = line
                 text = reader.text
                 return
