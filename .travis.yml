@@ -1,11 +1,13 @@
 sudo: false
+dist: trusty
 
 language: groovy
 jdk:
-  - openjdk6
-  - openjdk7
-  - oraclejdk7
+  - openjdk8
   - oraclejdk8
+
+install: true
+script: ./gradlew build
 
 notifications:
   email: false
