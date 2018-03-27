@@ -1,5 +1,4 @@
 /*
- * Licenser
  * Copyright (c) 2015, Minecrell <https://github.com/Minecrell>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
