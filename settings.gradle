@@ -1,1 +1,2 @@
 rootProject.name = 'licenser'
+enableFeaturePreview('STABLE_PUBLISHING')
