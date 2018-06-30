@@ -3,6 +3,7 @@ licenser is a simple license header manager for Gradle. It can automatically ens
 
 ## Features
 - Apply pre-defined license header in a file to the source files of the source sets
+- Variable substitution in the license header file
 - Apply license header only to certain files (include/exclude possible)
 - Apply special license headers to matching files  
 - Support for Android projects
@@ -41,6 +42,21 @@ The plugin can be configured using the `license` extension on the project.
         header = project.file('HEADER.txt')
     }
     ```
+
+- **Variable substitution in the license header:**
+
+    ```gradle
+    license {
+        header = project.file('HEADER.txt')
+        ext {
+            name = 'Company'
+            year = 2018
+        }
+
+        // Example license header: Copyright (C) ${year} ${name}
+    }
+    ```
+
 - **Toggle new empty line after the license header:** (Default: true)
 
     ```gradle
