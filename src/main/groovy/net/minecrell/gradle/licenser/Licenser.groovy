@@ -41,6 +41,7 @@ class Licenser implements Plugin<Project> {
     private static final String CHECK_TASK = 'checkLicense'
     private static final String FORMAT_TASK = 'updateLicense'
     private static final String ANDROID_TASK = 'Android'
+    private static final String CUSTOM_TASK = 'Custom'
 
     private Project project
     private LicenseExtension extension
@@ -50,7 +51,7 @@ class Licenser implements Plugin<Project> {
         this.project = project
 
         project.with {
-            this.extension = extensions.create('license', LicenseExtension)
+            this.extension = extensions.create('license', LicenseExtension, project)
             extension.header = project.file('LICENSE')
             plugins.withType(JavaBasePlugin) {
                 extension.sourceSets = project.sourceSets
@@ -73,7 +74,6 @@ class Licenser implements Plugin<Project> {
 
             // Wait a bit until creating the tasks
             afterEvaluate {
-                extension.conditionalProperties.listIterator()
                 def headers = []
                 extension.conditionalProperties.reverseEach {
                     headers << prepareHeader(extension, it)
@@ -92,6 +92,13 @@ class Licenser implements Plugin<Project> {
                     check.ignoreFailures = extension.ignoreFailures
                     globalCheck.dependsOn check
                     globalFormat.dependsOn createAndroidTask(FORMAT_TASK, LicenseUpdate, headers, it)
+                }
+
+                extension.tasks.each {
+                    def check = createCustomTask(CHECK_TASK, LicenseCheck, it)
+                    check.ignoreFailures = extension.ignoreFailures
+                    globalCheck.dependsOn check
+                    globalFormat.dependsOn createCustomTask(FORMAT_TASK, LicenseUpdate, it)
                 }
             }
         }
@@ -124,6 +131,14 @@ class Licenser implements Plugin<Project> {
     private <T extends LicenseTask> T createAndroidTask(String name, Class<T> type, List<Header> headers, Object sourceSet) {
         return makeTask(name + ANDROID_TASK + sourceSet.name.capitalize(), type, headers,
                 project.files(sourceSet.java.sourceFiles, sourceSet.res.sourceFiles, sourceSet.manifest.srcFile))
+    }
+
+    private <T extends LicenseTask> T createCustomTask(String name, Class<T> type, LicenseTaskProperties properties) {
+        def headers = [prepareHeader(extension, properties)]
+        def task = makeTask(name + CUSTOM_TASK + properties.name.capitalize(), type, headers, properties.files)
+        task.filter = properties.filter
+        return task
+
     }
 
     private <T extends LicenseTask> T makeTask(String name, Class<T> type, List<Header> headers, FileCollection files) {

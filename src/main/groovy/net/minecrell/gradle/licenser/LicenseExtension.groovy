@@ -24,6 +24,7 @@ package net.minecrell.gradle.licenser
 
 import net.minecrell.gradle.licenser.header.HeaderFormatRegistry
 import org.gradle.api.Incubating
+import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.util.PatternFilterable
@@ -85,8 +86,20 @@ class LicenseExtension extends LicenseProperties {
      */
     final List<LicenseProperties> conditionalProperties = []
 
-    LicenseExtension() {
+    /**
+     * Additional custom license tasks that operate on a listed set of files
+     * (not necessarily source sets). Can be used to apply license headers to
+     * sources outside of source sets.
+     */
+    @Incubating
+    final NamedDomainObjectContainer<LicenseTaskProperties> tasks
+
+    LicenseExtension(Project project) {
         super(new PatternSet())
+
+        this.tasks = project.container(LicenseTaskProperties) { name ->
+            new LicenseTaskProperties((filter as PatternSet).intersect(), name)
+        }
 
         // Defaults
         newLine = true
@@ -152,7 +165,7 @@ class LicenseExtension extends LicenseProperties {
      * @param closure The closure that configures the license header
      */
     void matching(PatternSet pattern, @DelegatesTo(LicenseProperties) Closure closure) {
-        conditionalProperties.add(ConfigureUtil.configure(closure, new LicenseProperties(pattern)))
+        conditionalProperties.add(ConfigureUtil.configure(closure, new LicenseProperties(this, pattern)))
     }
 
     /**
@@ -162,6 +175,16 @@ class LicenseExtension extends LicenseProperties {
      */
     void style(@DelegatesTo(HeaderFormatRegistry) Closure closure) {
         ConfigureUtil.configure(closure, style)
+    }
+
+    /**
+     * Configures the custom tasks using the specified {@link Closure}.
+     *
+     * @param closure The closure to apply to the custom tasks
+     */
+    @Incubating
+    void tasks(Closure closure) {
+        this.tasks.configure(closure)
     }
 
 }
