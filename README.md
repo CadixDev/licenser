@@ -105,6 +105,7 @@ The plugin can be configured using the `license` extension on the project.
             }
         }
     }
+    ```
 
 - **Manage file extension to license header styles:**
 
