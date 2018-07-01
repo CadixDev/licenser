@@ -2,7 +2,7 @@
 licenser is a simple license header manager for Gradle. It can automatically ensure that the source files contain a predefined license header and optionally generate them automatically using a Gradle task. It provides several options as configuration (e.g. variables in the license header, included file types, style of license header) so it can be customized for each project.
 
 ## Features
-- Apply pre-defined license header in a file to the source files of the source sets
+- Apply pre-defined license header in a file to the source files of the source sets or any other set of files (configurable)
 - Variable substitution in the license header file
 - Apply license header only to certain files (include/exclude possible)
 - Apply special license headers to matching files  
@@ -29,6 +29,8 @@ This will apply the `LICENSE` file found in the project directory to all common 
 |`updateLicense<SourceSet>`|Updates the license headers in the specified source set. Will create a backup in `build/tmp/updateLicense<SourceSet>/original`.|
 |`checkLicenseAndroid<SourceSet>`|Same as `checkLicense<SourceSet>`, but for Android source sets.|
 |`updateLicenseAndroid<SourceSet>`|Same as `updateLicense<SourceSet>`, but for Android source sets.|
+|`checkLicenseCustom<Name>`|Same as `checkLicense<SourceSet>`, but for custom tasks.|
+|`updateLicenseCustom<Name>`|Same as `updateLicense<SourceSet>`, but for custom tasks.|
 |`licenseCheck`|Alias for `checkLicenses`|
 |`licenseFormat`|Alias for `updateLicenses`|
 
@@ -88,6 +90,22 @@ The plugin can be configured using the `license` extension on the project.
         }
     }
     ```
+- **Custom tasks: Apply license header to files outside of source set:**
+
+    ```gradle
+    license {
+        tasks {
+            gradle {
+                files = project.files('build.gradle.kts', 'settings.gradle.kts', 'gradle.properties')
+                // header = ... (optional)
+            }
+            directory {
+                files = project.files('path/to/directory')
+                // include/exclude ... (optional)
+            }
+        }
+    }
+
 - **Manage file extension to license header styles:**
 
     ```gradle
