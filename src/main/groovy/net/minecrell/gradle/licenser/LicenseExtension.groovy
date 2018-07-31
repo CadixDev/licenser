@@ -167,7 +167,7 @@ class LicenseExtension extends LicenseProperties {
      * @param closure The closure that configures the license header
      */
     void matching(PatternSet pattern, @DelegatesTo(LicenseProperties) Closure closure) {
-        conditionalProperties.add(ConfigureUtil.configure(closure, new LicenseProperties(this, pattern)))
+        conditionalProperties.add(ConfigureUtil.configure(closure, new LicenseProperties(pattern)))
     }
 
     /**
