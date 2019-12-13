@@ -32,6 +32,7 @@ import org.gradle.api.file.FileTree
 import org.gradle.api.file.FileTreeElement
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.util.PatternFilterable
 
@@ -40,14 +41,17 @@ class LicenseTask extends DefaultTask {
     @Input
     List<Header> headers
 
-    @InputFiles
-    @SkipWhenEmpty
+    @Internal
     FileCollection files
 
+    @Input
     PatternFilterable filter
 
+    @Input
     String charset
 
+    @InputFiles
+    @SkipWhenEmpty
     FileTree getMatchingFiles() {
         def tree = this.files.asFileTree
         return filter != null ? tree.matching(filter) : tree

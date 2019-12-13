@@ -26,12 +26,26 @@ package org.cadixdev.gradle.licenser.tasks
 
 import org.cadixdev.gradle.licenser.LicenseViolationException
 import org.gradle.api.file.FileVisitDetails
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.VerificationTask
 
 class LicenseCheck extends LicenseTask implements VerificationTask {
 
-    boolean ignoreFailures
+    // We can't use a Groovy property, as it would produce 2 getters to
+    // satisfy VerificationTask - which Gradle doesn't like.
+    private boolean _ignoreFailures
+
+    @Input
+    @Override
+    boolean getIgnoreFailures() {
+        return this._ignoreFailures
+    }
+
+    @Override
+    void setIgnoreFailures(boolean value) {
+        this._ignoreFailures = value
+    }
 
     @TaskAction
     void checkFiles() {
