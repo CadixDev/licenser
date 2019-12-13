@@ -26,12 +26,21 @@ package net.minecrell.gradle.licenser.tasks
 
 import net.minecrell.gradle.licenser.LicenseViolationException
 import org.gradle.api.file.FileVisitDetails
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.VerificationTask
 
-class LicenseCheck extends LicenseTask implements VerificationTask {
+class LicenseCheck extends LicenseTask implements VerificationTask
+{
 
-    boolean ignoreFailures
+    private boolean _ignoreFailures
+
+    @Override
+    void setIgnoreFailures(boolean value) { _ignoreFailures = true }
+
+    @Input
+    @Override
+    boolean getIgnoreFailures() { return _ignoreFailures }
 
     @TaskAction
     void checkFiles() {
@@ -41,7 +50,7 @@ class LicenseCheck extends LicenseTask implements VerificationTask {
             return
         }
 
-        Set<File> violations = []
+        Set<File> violations = [ ]
         matchingFiles.visit { FileVisitDetails details ->
             if (!details.directory) {
                 didWork = true

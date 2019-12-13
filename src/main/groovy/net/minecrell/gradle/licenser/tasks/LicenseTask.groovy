@@ -44,10 +44,14 @@ class LicenseTask extends DefaultTask {
     @SkipWhenEmpty
     FileCollection files
 
+    @Input
     PatternFilterable filter
 
+    @Input
     String charset
 
+    @InputFiles
+    @SkipWhenEmpty
     FileTree getMatchingFiles() {
         def tree = this.files.asFileTree
         return filter != null ? tree.matching(filter) : tree
