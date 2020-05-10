@@ -8,12 +8,12 @@ plugins {
     id 'net.minecrell.licenser' version '0.4.1'
 }
 
-group = 'net.minecrell'
-version = '0.4.2-SNAPSHOT'
-description = 'A simple license header manager for Gradle'
-
 sourceCompatibility = '1.6'
 targetCompatibility = '1.6'
+
+group = 'org.cadixdev.gradle'
+version = '0.5.0-SNAPSHOT'
+description = 'A simple license header manager for Gradle'
 
 dependencies {
     compile localGroovy()
@@ -37,21 +37,21 @@ task groovydocJar(type: Jar, dependsOn: groovydoc) {
 gradlePlugin {
     plugins {
         licenser {
-            id = 'net.minecrell.licenser'
-            implementationClass = 'net.minecrell.gradle.licenser.Licenser'
+            id = 'org.cadixdev.licenser'
+            implementationClass = 'org.cadixdev.gradle.licenser.Licenser'
         }
     }
 }
 
 pluginBundle {
-    website = 'https://github.com/Minecrell/licenser'
+    website = 'https://github.com/CadixDev/licenser'
     vcsUrl = website
     description = project.description
     tags = ['license']
 
     plugins {
         licenserPlugin {
-            id = 'net.minecrell.licenser'
+            id = 'org.cadixdev.licenser'
             displayName = 'licenser'
         }
     }

@@ -22,9 +22,9 @@
  * THE SOFTWARE.
  */
 
-package net.minecrell.gradle.licenser
+package org.cadixdev.gradle.licenser
 
-import net.minecrell.gradle.licenser.header.HeaderFormatRegistry
+import org.cadixdev.gradle.licenser.header.HeaderFormatRegistry
 import org.gradle.api.Incubating
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project

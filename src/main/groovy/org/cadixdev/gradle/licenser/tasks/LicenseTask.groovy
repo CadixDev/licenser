@@ -22,10 +22,10 @@
  * THE SOFTWARE.
  */
 
-package net.minecrell.gradle.licenser.tasks
+package org.cadixdev.gradle.licenser.tasks
 
-import net.minecrell.gradle.licenser.header.Header
-import net.minecrell.gradle.licenser.header.PreparedHeader
+import org.cadixdev.gradle.licenser.header.Header
+import org.cadixdev.gradle.licenser.header.PreparedHeader
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileTree

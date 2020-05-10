@@ -22,12 +22,32 @@
  * THE SOFTWARE.
  */
 
-package net.minecrell.gradle.licenser.header;
+package org.cadixdev.gradle.licenser
 
-public interface HeaderFormat {
+import org.gradle.api.Incubating
+import org.gradle.api.file.FileCollection
+import org.gradle.api.tasks.util.PatternSet
 
-    String getName();
+/**
+ * Represents a custom license task that operates on a number of files
+ * defined by {@link #files}.
+ */
+@Incubating
+class LicenseTaskProperties extends LicenseProperties {
 
-    PreparedHeader prepare(Header header, String text);
+    /**
+     * The name of this custom task. This is set automatically in the container.
+     */
+    final String name
+
+    /**
+     * The set of files to operate on.
+     */
+    FileCollection files
+
+    LicenseTaskProperties(PatternSet filter, String name) {
+        super(filter)
+        this.name = name
+    }
 
 }

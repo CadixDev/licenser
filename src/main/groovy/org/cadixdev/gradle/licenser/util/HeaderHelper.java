@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package net.minecrell.gradle.licenser.util;
+package org.cadixdev.gradle.licenser.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;

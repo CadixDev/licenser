@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package net.minecrell.gradle.licenser.tasks
+package org.cadixdev.gradle.licenser.tasks
 
 import org.gradle.api.GradleException
 import org.gradle.api.file.FileVisitDetails

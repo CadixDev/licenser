@@ -22,37 +22,23 @@
  * THE SOFTWARE.
  */
 
-package net.minecrell.gradle.licenser.util
+package org.cadixdev.gradle.licenser;
 
-class CaseInsensitiveMap<V> extends HashMap<String, V> {
+import org.gradle.api.GradleException;
 
-    private static String normalizeKey(Object key) {
-        return key.toString().toLowerCase(Locale.ROOT)
-    }
+/**
+ * Thrown if a license violation was found.
+ */
+public class LicenseViolationException extends GradleException {
 
-    @Override
-    boolean containsKey(Object key) {
-        return super.containsKey(normalizeKey(key))
-    }
-
-    @Override
-    V get(Object key) {
-        return super.get(normalizeKey(key))
-    }
-
-    @Override
-    V put(String key, V value) {
-        return super.put(normalizeKey(key), value)
-    }
-
-    @Override
-    V remove(Object key) {
-        return super.remove(normalizeKey(key))
-    }
-
-    @Override
-    void putAll(Map<? extends String, ? extends V> m) {
-        m.each this.&put
+    /**
+     * Constructs a new {@link LicenseViolationException} with the specified
+     * message.
+     *
+     * @param message The exception message
+     */
+    public LicenseViolationException(String message) {
+        super(message);
     }
 
 }

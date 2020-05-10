@@ -22,15 +22,39 @@
  * THE SOFTWARE.
  */
 
-package net.minecrell.gradle.licenser.header;
+package org.cadixdev.gradle.licenser
 
-import java.io.File;
-import java.io.IOException;
+import org.gradle.api.tasks.util.PatternFilterable
+import org.gradle.api.tasks.util.PatternSet
 
-public interface PreparedHeader {
+/**
+ * Specifies how to format the license header of a subset of the files, defined
+ * by the {@link #filter}.
+ */
+class LicenseProperties implements PatternFilterable {
 
-    boolean check(File file, String charset) throws IOException;
+    /**
+     * The filter to apply to the source files.
+     * By default this only includes a few excludes for binary files or files
+     * without standardized comment formats.
+     */
+    @Delegate
+    PatternFilterable filter
 
-    boolean update(File file, String charset, Runnable callback) throws IOException;
+    /**
+     * The path to the file containing the license header.
+     * By default this is the {@code LICENSE} file in the project directory.
+     */
+    File header
+
+    /**
+     * Whether to insert an empty line after the license header.
+     * By default this is {@code true}.
+     */
+    Boolean newLine
+
+    LicenseProperties(PatternSet filter) {
+        this.filter = filter
+    }
 
 }

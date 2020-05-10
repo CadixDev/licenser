@@ -22,9 +22,9 @@
  * THE SOFTWARE.
  */
 
-package net.minecrell.gradle.licenser.header
+package org.cadixdev.gradle.licenser.header
 
-import net.minecrell.gradle.licenser.util.HeaderHelper
+import org.cadixdev.gradle.licenser.util.HeaderHelper
 
 import java.util.regex.Pattern
 

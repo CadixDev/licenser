@@ -22,44 +22,37 @@
  * THE SOFTWARE.
  */
 
-package net.minecrell.gradle.licenser.header
+package org.cadixdev.gradle.licenser.util
 
-import net.minecrell.gradle.licenser.util.CaseInsensitiveMap
+class CaseInsensitiveMap<V> extends HashMap<String, V> {
 
-class HeaderFormatRegistry extends CaseInsensitiveMap<HeaderFormat> {
-
-    HeaderFormatRegistry() {
-        for (HeaderStyle style : HeaderStyle.values()) {
-            style.register(this)
-        }
-    }
-
-    // Note: This is Groovy magic
-
-    HeaderFormat put(String key, HeaderStyle value) {
-        return put(key, value.format)
-    }
-
-    HeaderFormat put(String key, String value) {
-        return put(key, value as HeaderStyle)
-    }
-
-    HeaderFormat putAt(String key, HeaderStyle value) {
-        return put(key, value)
-    }
-
-    HeaderFormat putAt(String key, String value) {
-        return put(key, value)
+    private static String normalizeKey(Object key) {
+        return key.toString().toLowerCase(Locale.ROOT)
     }
 
     @Override
-    Object getProperty(String key) {
-        return get(key)
+    boolean containsKey(Object key) {
+        return super.containsKey(normalizeKey(key))
     }
 
     @Override
-    void setProperty(String key, Object value) {
-        put(key, value)
+    V get(Object key) {
+        return super.get(normalizeKey(key))
+    }
+
+    @Override
+    V put(String key, V value) {
+        return super.put(normalizeKey(key), value)
+    }
+
+    @Override
+    V remove(Object key) {
+        return super.remove(normalizeKey(key))
+    }
+
+    @Override
+    void putAll(Map<? extends String, ? extends V> m) {
+        m.each this.&put
     }
 
 }

@@ -22,15 +22,15 @@
  * THE SOFTWARE.
  */
 
-package net.minecrell.gradle.licenser
+package org.cadixdev.gradle.licenser
 
 import static org.gradle.api.plugins.JavaBasePlugin.CHECK_TASK_NAME
 
 import groovy.text.SimpleTemplateEngine
-import net.minecrell.gradle.licenser.header.Header
-import net.minecrell.gradle.licenser.tasks.LicenseCheck
-import net.minecrell.gradle.licenser.tasks.LicenseTask
-import net.minecrell.gradle.licenser.tasks.LicenseUpdate
+import org.cadixdev.gradle.licenser.header.Header
+import org.cadixdev.gradle.licenser.tasks.LicenseCheck
+import org.cadixdev.gradle.licenser.tasks.LicenseTask
+import org.cadixdev.gradle.licenser.tasks.LicenseUpdate
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection

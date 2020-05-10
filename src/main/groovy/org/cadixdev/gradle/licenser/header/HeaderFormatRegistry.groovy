@@ -22,28 +22,44 @@
  * THE SOFTWARE.
  */
 
-package net.minecrell.gradle.licenser.header
+package org.cadixdev.gradle.licenser.header
 
-import java.util.regex.Pattern
+import org.cadixdev.gradle.licenser.util.CaseInsensitiveMap
 
-enum HeaderStyle {
-    BLOCK_COMMENT(~/^\s*\/\*(?:[^*].*)?$/, ~/\*\/\s*(.*?)$/, null, '/*', ' *', ' */',
-        'java', 'groovy', 'scala', 'kt', 'kts', 'gradle', 'css', 'js'),
-    JAVADOC(~/^\s*\/\*\*(?:[^*].*)?$/, ~/\*\/\s*(.*?)$/, null, '/**', ' *', ' */'),
-    HASH(~/^\s*#/, null, ~/^\s*#!/, '#', '#', '#', 'properties', 'yml', 'yaml', 'sh'),
-    XML(~/^\s*<!--/, ~/-->\s*(.*?)$/, ~/^\s*<(?:\?xml .*\?|!DOCTYPE .*)>\s*$/, '<!--', '   ', '-->',
-            'xml', 'xsd', 'xsl', 'fxml', 'dtd', 'html', 'xhtml')
+class HeaderFormatRegistry extends CaseInsensitiveMap<HeaderFormat> {
 
-    final CommentHeaderFormat format
-    private final String[] extensions
-
-    HeaderStyle(Pattern start, Pattern end, Pattern skipLine, String firstLine, String prefix, String lastLine, String... extensions) {
-        this.format = new CommentHeaderFormat(this.name(), start, end, skipLine, firstLine, prefix, lastLine)
-        this.extensions = extensions
+    HeaderFormatRegistry() {
+        for (HeaderStyle style : HeaderStyle.values()) {
+            style.register(this)
+        }
     }
 
-    void register(HeaderFormatRegistry registry) {
-        extensions.each { registry[it] = this }
+    // Note: This is Groovy magic
+
+    HeaderFormat put(String key, HeaderStyle value) {
+        return put(key, value.format)
+    }
+
+    HeaderFormat put(String key, String value) {
+        return put(key, value as HeaderStyle)
+    }
+
+    HeaderFormat putAt(String key, HeaderStyle value) {
+        return put(key, value)
+    }
+
+    HeaderFormat putAt(String key, String value) {
+        return put(key, value)
+    }
+
+    @Override
+    Object getProperty(String key) {
+        return get(key)
+    }
+
+    @Override
+    void setProperty(String key, Object value) {
+        put(key, value)
     }
 
 }

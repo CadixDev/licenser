@@ -22,9 +22,9 @@
  * THE SOFTWARE.
  */
 
-package net.minecrell.gradle.licenser.tasks
+package org.cadixdev.gradle.licenser.tasks
 
-import net.minecrell.gradle.licenser.LicenseViolationException
+import org.cadixdev.gradle.licenser.LicenseViolationException
 import org.gradle.api.file.FileVisitDetails
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.VerificationTask
