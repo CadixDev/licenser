@@ -24,7 +24,6 @@
 
 package org.cadixdev.gradle.licenser.header
 
-
 import spock.lang.Specification
 
 class HeaderFormatRegistryTest extends Specification {
@@ -33,8 +32,6 @@ class HeaderFormatRegistryTest extends Specification {
         def registry = new HeaderFormatRegistry()
 
         then:
-        ["java", "js", "kt", "groovy", "yml", "xml", "html"].each {
-            registry.getProperty(it) != null
-        }
+        registry.keySet().containsAll(["java", "js", "kt", "groovy", "yml", "xml", "html"])
     }
 }

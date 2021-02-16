@@ -24,7 +24,6 @@
 
 package org.cadixdev.gradle.licenser
 
-
 import org.cadixdev.gradle.licenser.header.HeaderStyle
 import org.gradle.testfixtures.ProjectBuilder
 import spock.lang.Specification

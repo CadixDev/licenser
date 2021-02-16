@@ -37,7 +37,7 @@ class LicenserPluginTest extends Specification {
 
         then:
         ["licenseCheck", "licenseFormat", "checkLicenses", "updateLicenses"].each {
-            project.tasks.findByName(it) != null
+            assert project.tasks.findByName(it) != null
         }
     }
 }
