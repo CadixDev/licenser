@@ -176,7 +176,7 @@ class LicenseExtension extends LicenseProperties {
      * @param closure The closure to apply to the style
      */
     void style(@DelegatesTo(HeaderFormatRegistry) Closure closure) {
-        ConfigureUtil.configure(closure, style)
+        style.with(closure)
     }
 
     /**
