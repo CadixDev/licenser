@@ -24,6 +24,9 @@
 
 package org.cadixdev.gradle.licenser.util;
 
+import org.cadixdev.gradle.licenser.header.CommentHeaderFormat;
+
+import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Iterator;
@@ -82,6 +85,46 @@ public final class HeaderHelper {
         }
 
         return !itr.hasNext();
+    }
+
+    public static boolean contentStartsWithValidHeaderFormat(BufferedReader reader, CommentHeaderFormat format) throws IOException {
+        String firstLine;
+        while ((firstLine = skipEmptyLines(reader)) != null && findPattern(firstLine, format.getSkipLine())) {
+            // skip ignored lines
+        }
+        if (firstLine == null) {
+            return false;
+        }
+        final boolean firstLineMatches = format.getStart().matcher(firstLine).find();
+        boolean lastLineMatches = format.getEnd() == null;
+        boolean contentLinesMatch = true;
+
+        String line;
+        while ((line = reader.readLine()) != null) {
+            // skip ignored lines
+            if (findPattern(line, format.getSkipLine())) {
+                continue;
+            }
+
+            if (findPattern(line, format.getEnd())) {
+                lastLineMatches = true;
+                break;
+            } else if (format.getEnd() == null) {
+                break;
+            }
+            // If the current line doesn't match and there's no end marker, assume the header is complete
+            contentLinesMatch = contentLinesMatch && (line.startsWith(format.getPrefix()) || format.getEnd() == null);
+        }
+
+        return firstLineMatches && contentLinesMatch && lastLineMatches;
+    }
+
+    private static boolean findPattern(CharSequence line, @Nullable Pattern pattern) {
+        if (pattern == null) {
+            return false;
+        } else {
+            return pattern.matcher(line).find();
+        }
     }
 
     public static boolean isBlank(String s) {

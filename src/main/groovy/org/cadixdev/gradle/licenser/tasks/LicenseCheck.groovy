@@ -67,7 +67,7 @@ class LicenseCheck extends LicenseTask implements VerificationTask {
                         return
                     }
 
-                    if (!prepared.check(file, charset)) {
+                    if (!prepared.check(file, charset, skipExistingHeaders)) {
                         violations.add(file)
                     }
                 } catch (Exception e) {

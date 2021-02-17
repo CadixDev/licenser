@@ -39,9 +39,11 @@ class PreparedCommentHeader implements PreparedHeader {
     }
 
     @Override
-    boolean check(File file, String charset) throws IOException {
+    boolean check(File file, String charset, boolean skipExistingHeaders) throws IOException {
         return file.withReader(charset) { BufferedReader reader ->
-            boolean result = HeaderHelper.contentStartsWith(reader, this.lines.iterator(), format.skipLine)
+            boolean result = skipExistingHeaders ?
+                    HeaderHelper.contentStartsWithValidHeaderFormat(reader, format) :
+                    HeaderHelper.contentStartsWith(reader, this.lines.iterator(), format.skipLine)
             if (result) {
                 def line = reader.readLine()
                 if (header.newLine) {
@@ -55,7 +57,7 @@ class PreparedCommentHeader implements PreparedHeader {
     }
 
     @Override
-    boolean update(File file, String charset, Runnable callback) throws IOException {
+    boolean update(File file, String charset, boolean skipExistingHeaders, Runnable callback) throws IOException {
         boolean valid = false
         // The lines skipped before the license header
         List<String> before = []
@@ -70,6 +72,16 @@ class PreparedCommentHeader implements PreparedHeader {
         // Open file for verifying the license header and reading the text we
         // need to append after it
         file.withReader(charset) { BufferedReader reader ->
+            if (skipExistingHeaders) {
+                def startsWithValidHeader = HeaderHelper.contentStartsWithValidHeaderFormat(reader, format)
+                if (startsWithValidHeader) {
+                    valid = true
+                    return
+                } else {
+                    reader.reset()
+                }
+            }
+
             String line
             while (true) {
                 // Find first non-empty line

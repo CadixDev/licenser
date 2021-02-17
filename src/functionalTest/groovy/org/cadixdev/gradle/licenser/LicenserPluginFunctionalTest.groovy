@@ -30,6 +30,8 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
+import java.nio.file.Paths
+
 class LicenserPluginFunctionalTest extends Specification {
     @Rule
     TemporaryFolder temporaryFolder = new TemporaryFolder()
@@ -55,6 +57,89 @@ class LicenserPluginFunctionalTest extends Specification {
         then:
         result.task(":checkLicenses").outcome == TaskOutcome.UP_TO_DATE
         result.task(":licenseCheck").outcome == TaskOutcome.UP_TO_DATE
+    }
+
+    def "skips existing headers in checkLicenses task"() {
+        given:
+        def projectDir = temporaryFolder.newFolder()
+        def sourceDir = projectDir.toPath().resolve(Paths.get("src", "main", "java", "com", "example")).toFile()
+        sourceDir.mkdirs()
+        new File(projectDir, "header.txt") << "New copyright header"
+        new File(projectDir, "settings.gradle") << ""
+        new File(projectDir, "build.gradle") << """
+            plugins {
+                id('java')
+                id('org.cadixdev.licenser')
+            }
+            
+            license {
+                header = project.file('header.txt')
+                skipExistingHeaders = true
+            }
+        """.stripIndent()
+        new File(sourceDir, "MyClass.java") << """
+            /*
+             * Existing copyright header
+             */
+            
+            package com.example;
+            
+            class MyClass {}
+        """.stripIndent()
+
+        when:
+        def runner = GradleRunner.create()
+        runner.forwardOutput()
+        runner.withPluginClasspath()
+        runner.withArguments("checkLicenses")
+        runner.withProjectDir(projectDir)
+        def result = runner.build()
+
+        then:
+        result.task(":checkLicenses").outcome == TaskOutcome.SUCCESS
+    }
+
+    def "skips existing headers in updateLicenses task"() {
+        given:
+        def projectDir = temporaryFolder.newFolder()
+        def sourceDir = projectDir.toPath().resolve(Paths.get("src", "main", "java", "com", "example")).toFile()
+        sourceDir.mkdirs()
+        new File(projectDir, "header.txt") << "New copyright header"
+        new File(projectDir, "settings.gradle") << ""
+        new File(projectDir, "build.gradle") << """
+            plugins {
+                id('java')
+                id('org.cadixdev.licenser')
+            }
+            
+            license {
+                header = project.file('header.txt')
+                skipExistingHeaders = true
+            }
+        """.stripIndent()
+        def sourceFileContent = """\
+            /*
+             * Existing copyright header
+             */
+            
+            package com.example;
+            
+            class MyClass {}
+        """.stripIndent()
+        def sourceFile = new File(sourceDir, "MyClass.java") << sourceFileContent
+
+        when:
+        def runner = GradleRunner.create()
+        runner.forwardOutput()
+        runner.withPluginClasspath()
+        runner.withArguments("updateLicenses")
+        runner.withProjectDir(projectDir)
+        runner.debug = true
+        def result = runner.build()
+
+        then:
+        result.task(":updateLicenses").outcome == TaskOutcome.UP_TO_DATE
+        sourceFile.text == sourceFileContent
     }
 
     def "can run licenseFormat task"() {

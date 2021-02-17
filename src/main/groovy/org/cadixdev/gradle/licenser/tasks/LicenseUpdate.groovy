@@ -53,7 +53,7 @@ class LicenseUpdate extends LicenseTask {
                         return
                     }
 
-                    if (prepared.update(file, charset, {
+                    if (prepared.update(file, charset, skipExistingHeaders, {
                         def backup = details.relativePath.getFile(original)
                         if (backup.exists()) {
                             assert backup.delete(), "Failed to delete backup file: $backup"

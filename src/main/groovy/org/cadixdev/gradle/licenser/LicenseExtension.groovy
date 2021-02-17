@@ -68,6 +68,13 @@ class LicenseExtension extends LicenseProperties {
     boolean ignoreFailures = false
 
     /**
+     * Whether to skip existing license headers instead of failing the build or
+     * updating the license headers.
+     * By default this is {@code false}.
+     */
+    boolean skipExistingHeaders = false
+
+    /**
      * The style mappings from file extension to the type of style of the
      * comment header for the license header.
      * By default this includes mappings and styles for the most common file

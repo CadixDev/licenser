@@ -29,8 +29,8 @@ import java.io.IOException;
 
 public interface PreparedHeader {
 
-    boolean check(File file, String charset) throws IOException;
+    boolean check(File file, String charset, boolean skipExistingHeaders) throws IOException;
 
-    boolean update(File file, String charset, Runnable callback) throws IOException;
+    boolean update(File file, String charset, boolean skipExistingHeaders, Runnable callback) throws IOException;
 
 }

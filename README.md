@@ -66,6 +66,13 @@ The plugin can be configured using the `license` extension on the project.
         newLine = false // Disables the new line
     }
     ```
+- **Ignore existing license headers:** (Default: false)
+
+    ```gradle
+    license {
+        skipExistingHeaders = true // Ignore existing license headers on files
+    }
+    ```
 - **Exclude/include certain file types:** (Default: Excludes files without standard comment format and binary files)
 
     ```gradle
