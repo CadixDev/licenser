@@ -18,27 +18,40 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    implementation gradleApi()
-
-    testImplementation 'org.spockframework:spock-core:1.3-groovy-2.5'
-}
-
 sourceSets {
     functionalTest {
     }
 }
+
+configurations {
+    functionalTestImplementation.extendsFrom(testImplementation)
+    functionalTestRuntimeOnly.extendsFrom(testRuntimeOnly)
+}
 gradlePlugin.testSourceSets(sourceSets.functionalTest)
-configurations.functionalTestImplementation.extendsFrom(configurations.testImplementation)
 
 tasks.register('functionalTest', Test) {
+    description = 'Runs the functional tests.'
+    group = 'verification'
+
     testClassesDirs = sourceSets.functionalTest.output.classesDirs
     classpath = sourceSets.functionalTest.runtimeClasspath
+
+    mustRunAfter test
+}
+
+dependencies {
+    implementation gradleApi()
+
+    testImplementation 'org.spockframework:spock-core:1.3-groovy-2.5'
+    functionalTestImplementation gradleTestKit()
+}
+
+test {
+    useJUnit()
 }
 
 tasks.named('check') {
-    // Run the functional tests as part of `check`
-    dependsOn(tasks.functionalTest)
+    dependsOn(functionalTest)
 }
 
 license {
