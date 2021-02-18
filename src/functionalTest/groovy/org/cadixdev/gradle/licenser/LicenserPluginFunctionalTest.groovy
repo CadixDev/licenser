@@ -153,4 +153,52 @@ class LicenserPluginFunctionalTest extends Specification {
             TEST
             """.stripIndent()
     }
+
+    def "supports Android source sets"() {
+        given:
+        def projectDir = temporaryFolder.newFolder()
+        new File(projectDir, "settings.gradle") << ""
+        new File(projectDir, "build.gradle") << """
+            buildscript {
+                repositories {
+                    google()
+                }
+            
+                dependencies {
+                    classpath 'com.android.tools.build:gradle:4.0.0'
+                }
+            }
+
+            plugins {
+                id('org.cadixdev.licenser')
+            }
+            apply plugin: 'com.android.application'
+            
+            android {
+                compileSdkVersion 30
+                buildToolsVersion '30.0.1'
+                defaultConfig {
+                    applicationId 'org.gradle.samples'
+                    minSdkVersion 16
+                    targetSdkVersion 30
+                    versionCode 1
+                    versionName '1.0'
+                    testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+                }
+            }
+        """.stripIndent()
+
+        when:
+        def runner = GradleRunner.create()
+        runner.forwardOutput()
+        runner.withPluginClasspath()
+        runner.withArguments("licenseCheck")
+        runner.withProjectDir(projectDir)
+        def result = runner.build()
+
+        then:
+        result.task(":checkLicenseAndroidMain").outcome == TaskOutcome.NO_SOURCE
+        result.task(":checkLicenseAndroidRelease").outcome == TaskOutcome.NO_SOURCE
+        result.task(":checkLicenseAndroidTest").outcome == TaskOutcome.NO_SOURCE
+    }
 }
