@@ -83,17 +83,18 @@ class Licenser implements Plugin<Project> {
                 headers << prepareHeader(extension, extension)
 
                 extension.sourceSets.each {
-                    def check = createTask(CHECK_TASK, LicenseCheck, headers, it)
+                    def check = createTask(CHECK_TASK, LicenseCheck, headers, extension.includeBuild, it)
                     check.ignoreFailures = extension.ignoreFailures
                     globalCheck.dependsOn check
-                    globalFormat.dependsOn createTask(FORMAT_TASK, LicenseUpdate, headers, it)
+                    globalFormat.dependsOn createTask(FORMAT_TASK, LicenseUpdate, headers, extension.includeBuild, it)
                 }
 
                 extension.androidSourceSets.each {
-                    def check = createAndroidTask(CHECK_TASK, LicenseCheck, headers, it)
+                    def check = createAndroidTask(CHECK_TASK, LicenseCheck, headers, extension.includeBuild, it)
                     check.ignoreFailures = extension.ignoreFailures
                     globalCheck.dependsOn check
-                    globalFormat.dependsOn createAndroidTask(FORMAT_TASK, LicenseUpdate, headers, it)
+                    globalFormat.dependsOn createAndroidTask(FORMAT_TASK, LicenseUpdate, headers,
+                            extension.includeBuild, it)
                 }
 
                 extension.tasks.each {
@@ -126,13 +127,20 @@ class Licenser implements Plugin<Project> {
         }, (PatternSet) properties.filter, properties.newLine ?: extension.newLine,)
     }
 
-    private <T extends LicenseTask> T createTask(String name, Class<T> type, List<Header> headers, SourceSet sourceSet) {
-        return makeTask(sourceSet.getTaskName(name, null), type, headers, sourceSet.allSource)
+    private <T extends LicenseTask> T createTask(String name, Class<T> type, List<Header> headers,
+                                                 boolean includeBuild, SourceSet sourceSet) {
+        def files = sourceSet.allSource
+        def buildDir = project.buildDir.path
+        if (!includeBuild) files = files.filter { !it.path.startsWith(buildDir) }
+        return makeTask(sourceSet.getTaskName(name, null), type, headers, files)
     }
 
-    private <T extends LicenseTask> T createAndroidTask(String name, Class<T> type, List<Header> headers, Object sourceSet) {
-        return makeTask(name + ANDROID_TASK + sourceSet.name.capitalize(), type, headers,
-                project.files(sourceSet.java.sourceFiles, sourceSet.res.sourceFiles, sourceSet.manifest.srcFile))
+    private <T extends LicenseTask> T createAndroidTask(String name, Class<T> type, List<Header> headers,
+                                                        boolean includeBuild, Object sourceSet) {
+        def files = project.files(sourceSet.java.sourceFiles, sourceSet.res.sourceFiles, sourceSet.manifest.srcFile)
+        def buildDir = project.buildDir.path
+        if (!includeBuild) files = files.filter { !it.path.startsWith(buildDir) }
+        return makeTask(name + ANDROID_TASK + sourceSet.name.capitalize(), type, headers, files)
     }
 
     private <T extends LicenseTask> T createCustomTask(String name, Class<T> type, LicenseTaskProperties properties) {
