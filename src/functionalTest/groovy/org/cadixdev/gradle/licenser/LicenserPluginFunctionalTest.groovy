@@ -142,6 +142,61 @@ class LicenserPluginFunctionalTest extends Specification {
         sourceFile.text == sourceFileContent
     }
 
+    def "updates invalid headers in updateLicenses task when skipExistingHeaders=true"() {
+        given:
+        def projectDir = temporaryFolder.newFolder()
+        def sourceDir = projectDir.toPath().resolve(Paths.get("src", "main", "java", "com", "example")).toFile()
+        sourceDir.mkdirs()
+        new File(projectDir, "header.txt") << "New copyright header"
+        new File(projectDir, "settings.gradle") << ""
+        new File(projectDir, "build.gradle") << """
+            plugins {
+                id('java')
+                id('org.cadixdev.licenser')
+            }
+            
+            license {
+                header = project.file('header.txt')
+                skipExistingHeaders = true
+            }
+        """.stripIndent()
+        def sourceFileContent = """\
+            //
+            // Existing copyright header
+            //
+            
+            package com.example;
+            
+            class MyClass {}
+        """.stripIndent()
+        def sourceFile = new File(sourceDir, "MyClass.java") << sourceFileContent
+
+        when:
+        def runner = GradleRunner.create()
+        runner.forwardOutput()
+        runner.withPluginClasspath()
+        runner.withArguments("updateLicenses")
+        runner.withProjectDir(projectDir)
+        runner.debug = true
+        def result = runner.build()
+
+        then:
+        result.task(":updateLicenses").outcome == TaskOutcome.SUCCESS
+        sourceFile.text == """\
+            /*
+             * New copyright header
+             */
+            
+            //
+            // Existing copyright header
+            //
+            
+            package com.example;
+            
+            class MyClass {}
+        """.stripIndent()
+    }
+
     def "can run licenseFormat task"() {
         given:
         def projectDir = temporaryFolder.newFolder()

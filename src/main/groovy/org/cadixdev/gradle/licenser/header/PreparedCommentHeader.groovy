@@ -73,6 +73,7 @@ class PreparedCommentHeader implements PreparedHeader {
         // need to append after it
         file.withReader(charset) { BufferedReader reader ->
             if (skipExistingHeaders) {
+                reader.mark(2048)
                 def startsWithValidHeader = HeaderHelper.contentStartsWithValidHeaderFormat(reader, format)
                 if (startsWithValidHeader) {
                     valid = true
