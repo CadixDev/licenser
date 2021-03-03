@@ -93,7 +93,7 @@ abstract class LicenseTask extends DefaultTask {
     protected PreparedHeader prepareMatchingHeader(FileTreeElement element, File file) {
         def header = getMatchingHeader(element)
         if (header == null) {
-            logger.warn("No matching header found for {}", getSimplifiedPath(file))
+            logger.info("No matching header found for {}", getSimplifiedPath(file))
             return null
         }
 
@@ -103,7 +103,7 @@ abstract class LicenseTask extends DefaultTask {
 
         def prepared = header.prepare(file)
         if (prepared == null) {
-            logger.warn("No matching header format found for {}", getSimplifiedPath(file))
+            logger.info("No matching header format found for {}", getSimplifiedPath(file))
             return null
         }
 
