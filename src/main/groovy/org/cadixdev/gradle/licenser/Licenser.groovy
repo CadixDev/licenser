@@ -149,6 +149,7 @@ class Licenser implements Plugin<Project> {
             task.files = files
             task.filter = extension.filter
             task.charset = extension.charset
+            task.skipExistingHeaders = extension.skipExistingHeaders
         }
     }
 

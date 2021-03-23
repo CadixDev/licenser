@@ -24,6 +24,7 @@
 
 package org.cadixdev.gradle.licenser.header
 
+import javax.annotation.Nullable
 import java.util.regex.Pattern
 
 enum HeaderStyle {
@@ -37,7 +38,8 @@ enum HeaderStyle {
     final CommentHeaderFormat format
     private final String[] extensions
 
-    HeaderStyle(Pattern start, Pattern end, Pattern skipLine, String firstLine, String prefix, String lastLine, String... extensions) {
+    HeaderStyle(Pattern start, @Nullable Pattern end, @Nullable Pattern skipLine,
+                String firstLine, String prefix, String lastLine, String... extensions) {
         this.format = new CommentHeaderFormat(this.name(), start, end, skipLine, firstLine, prefix, lastLine)
         this.extensions = extensions
     }

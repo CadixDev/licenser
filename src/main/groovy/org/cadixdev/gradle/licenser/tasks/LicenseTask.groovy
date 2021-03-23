@@ -50,6 +50,9 @@ class LicenseTask extends DefaultTask {
     @Input
     String charset
 
+    @Input
+    boolean skipExistingHeaders
+
     @InputFiles
     @SkipWhenEmpty
     FileTree getMatchingFiles() {

@@ -26,6 +26,7 @@ package org.cadixdev.gradle.licenser.header
 
 import org.cadixdev.gradle.licenser.util.HeaderHelper
 
+import javax.annotation.Nullable
 import java.util.regex.Pattern
 
 class CommentHeaderFormat implements HeaderFormat {
@@ -33,14 +34,17 @@ class CommentHeaderFormat implements HeaderFormat {
     final String name
 
     final Pattern start
+    @Nullable
     final Pattern end
+    @Nullable
     final Pattern skipLine
 
     final String firstLine
     final String prefix
     final String lastLine
 
-    CommentHeaderFormat(String name, Pattern start, Pattern end, Pattern skipLine, String firstLine, String prefix, String lastLine) {
+    CommentHeaderFormat(String name, Pattern start, @Nullable Pattern end, @Nullable Pattern skipLine,
+                        String firstLine, String prefix, String lastLine) {
         this.name = name
         this.start = start
         this.end = end
