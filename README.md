@@ -13,7 +13,7 @@ For a simple project you only need to apply the licenser plugin to your project:
 
 ```gradle
 plugins {
-    id 'org.cadixdev.licenser' version '0.5.0'
+    id 'org.cadixdev.licenser' version '0.5.1'
 }
 ```
 
