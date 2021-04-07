@@ -24,6 +24,7 @@
 
 package org.cadixdev.gradle.licenser.header
 
+import groovy.transform.PackageScope
 import org.cadixdev.gradle.licenser.util.HeaderHelper
 
 import javax.annotation.Nullable
@@ -43,6 +44,7 @@ class CommentHeaderFormat implements HeaderFormat {
     final String prefix
     final String lastLine
 
+    @PackageScope
     CommentHeaderFormat(String name, Pattern start, @Nullable Pattern end, @Nullable Pattern skipLine,
                         String firstLine, String prefix, String lastLine) {
         this.name = name

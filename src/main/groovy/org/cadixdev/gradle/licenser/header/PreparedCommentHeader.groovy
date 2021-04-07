@@ -24,8 +24,10 @@
 
 package org.cadixdev.gradle.licenser.header
 
+import groovy.transform.PackageScope
 import org.cadixdev.gradle.licenser.util.HeaderHelper
 
+@PackageScope
 class PreparedCommentHeader implements PreparedHeader {
 
     final Header header
@@ -46,7 +48,7 @@ class PreparedCommentHeader implements PreparedHeader {
                     HeaderHelper.contentStartsWith(reader, this.lines.iterator(), format.skipLine)
             if (result) {
                 def line = reader.readLine()
-                if (header.newLine) {
+                if (header.newLine.get()) {
                     result = line != null && line.isEmpty()
                 } else if (line != null) {
                     result = !line.isEmpty()
@@ -57,7 +59,7 @@ class PreparedCommentHeader implements PreparedHeader {
     }
 
     @Override
-    boolean update(File file, String charset, boolean skipExistingHeaders, Runnable callback) throws IOException {
+    boolean update(File file, String charset, String lineSeparator, boolean skipExistingHeaders, Runnable callback) throws IOException {
         boolean valid = false
         // The lines skipped before the license header
         List<String> before = []
@@ -211,7 +213,7 @@ class PreparedCommentHeader implements PreparedHeader {
 
             // Look more carefully at the new lines
             if (valid) {
-                if (header.newLine) {
+                if (header.newLine.get()) {
                     // Only valid if next line is empty
                     valid = last != null && last.isEmpty()
                 } else if (last != null) {
@@ -245,29 +247,38 @@ class PreparedCommentHeader implements PreparedHeader {
 
         // Open file for updating license header
         file.withWriter(charset) { BufferedWriter writer ->
-
             // Write lines that were skipped before the header
-            before.each writer.&writeLine
+            before.each {
+                writer.write(it)
+                writer.write(lineSeparator)
+            }
 
             // Write actual license header
-            this.lines.each writer.&writeLine
+            this.lines.each {
+                writer.write(it)
+                writer.write(lineSeparator)
+            }
 
             // Add new line if requested
-            if (header.newLine) {
-                writer.newLine()
+            if (header.newLine.get()) {
+                writer.write(lineSeparator)
             }
 
             // Add comment that was collected but did not match a valid license header
             // (Did not contain any of the defined keywords)
             if (comment != null) {
-                comment.each writer.&writeLine
+                comment.each {
+                    writer.write(it)
+                    writer.write(lineSeparator)
+                }
             }
 
             // Write the last line we have looked at additionally
             // (Only if we have a captured (non-license header) comment before this
             // or it is not empty, we handle the new lines for license header ourselves)
             if (last != null && (comment != null || !last.isEmpty())) {
-                writer.writeLine(last)
+                writer.write(last)
+                writer.write(lineSeparator)
             }
 
             // Write the remaining file

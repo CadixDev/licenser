@@ -26,36 +26,32 @@ package org.cadixdev.gradle.licenser.tasks
 
 import org.cadixdev.gradle.licenser.LicenseViolationException
 import org.gradle.api.file.FileVisitDetails
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.VerificationTask
 
-class LicenseCheck extends LicenseTask implements VerificationTask {
-
-    // We can't use a Groovy property, as it would produce 2 getters to
-    // satisfy VerificationTask - which Gradle doesn't like.
-    private boolean _ignoreFailures
+abstract class LicenseCheck extends LicenseTask {
 
     @Input
-    @Override
-    boolean getIgnoreFailures() {
-        return this._ignoreFailures
-    }
+    abstract Property<Boolean> getIgnoreFailures()
 
-    @Override
-    void setIgnoreFailures(boolean value) {
-        this._ignoreFailures = value
+    void ignoreFailures(final boolean ignoreFailures) {
+        this.ignoreFailures.set(ignoreFailures)
     }
 
     @TaskAction
     void checkFiles() {
         didWork = false
 
+        def headers = this.headers.get()
         if (headers.size() == 1 && headers.first().text.empty) {
             return
         }
 
         Set<File> violations = []
+        def charset = charset.get()
+        def skipExistingHeaders = skipExistingHeaders.get()
         matchingFiles.visit { FileVisitDetails details ->
             if (!details.directory) {
                 didWork = true
@@ -81,7 +77,7 @@ class LicenseCheck extends LicenseTask implements VerificationTask {
             String violators = violations.collect { getSimplifiedPath(it) }.join(', ')
 
             final def message = "License violations were found: $violators"
-            if (ignoreFailures) {
+            if (this.ignoreFailures.get()) {
                 logger.warn(message)
             } else {
                 throw new LicenseViolationException(message)

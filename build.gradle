@@ -2,9 +2,9 @@ plugins {
     id 'java-gradle-plugin'
     id 'groovy'
 
-    id 'com.gradle.plugin-publish' version '0.12.0'
+    id 'com.gradle.plugin-publish' version '0.14.0'
 
-    id 'org.cadixdev.licenser' version '0.5.0'
+    id 'org.cadixdev.licenser' version '0.5.1'
 }
 
 sourceCompatibility = '1.8'

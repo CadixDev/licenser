@@ -32,7 +32,7 @@ class LicenseExtensionTest extends Specification {
     def "style closure registers header style"() {
         given:
         def project = ProjectBuilder.builder().build()
-        def licenseExtension = new LicenseExtension(project)
+        def licenseExtension = new LicenseExtension(project.objects, project)
 
         when:
         licenseExtension.style {

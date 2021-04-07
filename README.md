@@ -50,7 +50,7 @@ The plugin can be configured using the `license` extension on the project.
     ```gradle
     license {
         header = project.file('HEADER.txt')
-        ext {
+        properties {
             name = 'Company'
             year = 2018
         }
@@ -103,11 +103,11 @@ The plugin can be configured using the `license` extension on the project.
     license {
         tasks {
             gradle {
-                files = project.files('build.gradle.kts', 'settings.gradle.kts', 'gradle.properties')
+                files.from('build.gradle.kts', 'settings.gradle.kts', 'gradle.properties')
                 // header = ... (optional)
             }
             directory {
-                files = project.files('path/to/directory')
+                files.from('path/to/directory')
                 // include/exclude ... (optional)
             }
         }
@@ -127,15 +127,12 @@ The plugin can be configured using the `license` extension on the project.
 
     ```gradle
     license {
-        // Apply licenses only to main source set
-        sourceSets = [project.sourceSets.main]
-
-        // Apply licenses only to certain source sets on Android
-        androidSourceSets = [android.sourceSets.main]
-
         // Ignore failures and only print a warning on license violations
         ignoreFailures = true
 
         // Read/write files with platform charset (Default: UTF-8)
         charset = Charset.defaultCharset().name()
+  
+        // Override the line ending used for license files (Default: system line ending)
+        lineEnding = '\n'
     }

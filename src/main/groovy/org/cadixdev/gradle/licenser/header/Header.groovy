@@ -26,34 +26,46 @@ package org.cadixdev.gradle.licenser.header
 
 import org.cadixdev.gradle.licenser.util.HeaderHelper
 import org.gradle.api.file.FileTreeElement
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Provider
 import org.gradle.api.specs.Spec
 import org.gradle.api.specs.Specs
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.util.PatternSet
 
 class Header {
 
+    @Internal
     final HeaderFormatRegistry registry
-    final List<String> keywords
 
-    private final Closure<String> loader
+    @Input
+    final Provider<List<String>> keywords
+
+    private final Provider<String> loader
+
+    @Input
     final Spec<FileTreeElement> filter
 
-    final boolean newLine
+    @Input
+    final Provider<Boolean> newLine
+
     private String text
 
     private final Map<HeaderFormat, PreparedHeader> formatted = new IdentityHashMap<>()
 
-    Header(HeaderFormatRegistry registry, List<String> keywords, Closure<String> loader, PatternSet filter, boolean newLine) {
+    Header(HeaderFormatRegistry registry, ListProperty<String> keywords, Provider<String> loader, PatternSet filter, Provider<Boolean> newLine) {
         this.registry = registry
-        this.keywords = keywords*.toLowerCase().asImmutable()
+        this.keywords = keywords.map { it*.toLowerCase() }
         this.loader = loader
         this.filter = filter?.asSpec ?: Specs.satisfyAll()
         this.newLine = newLine
     }
 
+    @Input
     String getText() {
         if (this.text == null) {
-            this.text = loader.call()
+            this.text = this.loader.get()
             if (!containsKeyword(this.text)) {
                 throw new IllegalArgumentException("Header does not contain any of the required keywords: $keywords")
             }
@@ -64,7 +76,7 @@ class Header {
 
     boolean containsKeyword(String s) {
         s = s.toLowerCase()
-        return keywords.any(s.&contains)
+        return keywords.get().any(s.&contains)
     }
 
     PreparedHeader prepare(HeaderFormat format) {
