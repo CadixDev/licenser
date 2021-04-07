@@ -29,6 +29,7 @@ import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import java.nio.file.Paths
 
@@ -36,7 +37,32 @@ class LicenserPluginFunctionalTest extends Specification {
     @Rule
     TemporaryFolder temporaryFolder = new TemporaryFolder()
 
-    def "can run licenseCheck task"() {
+    static final def standardArguments = ["--warning-mode", "fail", "--stacktrace"].asImmutable()
+
+    static final def configurationCacheTestMatrix = [
+            // TODO: restore android plugin once versions that support configuration cache are available
+            /* gradleVersion | androidVersion | extraArgs */
+            [ "6.8.3",         null,            ["--configuration-cache"] ],
+            [ "7.0",           null,            ["--configuration-cache"] ],
+    ].asImmutable()
+
+    static final def testMatrix = ([
+            /* gradleVersion | androidVersion | extraArgs */
+            [ "5.6.4",         "3.6.4",         [] ],
+            [ "6.8.3",         "4.1.0",         [] ],
+    ] + configurationCacheTestMatrix).asImmutable()
+
+    GradleRunner runner(File projectDir, gradleVersion, args) {
+        return GradleRunner.create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withGradleVersion(gradleVersion)
+                .withArguments(standardArguments + args)
+                .withProjectDir(projectDir)
+    }
+
+    @Unroll
+    def "can run licenseCheck task (gradle #gradleVersion)"() {
         given:
         def projectDir = temporaryFolder.newFolder()
         new File(projectDir, "settings.gradle") << ""
@@ -47,19 +73,18 @@ class LicenserPluginFunctionalTest extends Specification {
         """.stripIndent()
 
         when:
-        def runner = GradleRunner.create()
-        runner.forwardOutput()
-        runner.withPluginClasspath()
-        runner.withArguments("licenseCheck")
-        runner.withProjectDir(projectDir)
-        def result = runner.build()
+        def result = runner(projectDir, gradleVersion, extraArgs + "licenseCheck").build()
 
         then:
         result.task(":checkLicenses").outcome == TaskOutcome.UP_TO_DATE
         result.task(":licenseCheck").outcome == TaskOutcome.UP_TO_DATE
+
+        where:
+        [gradleVersion, _, extraArgs] << testMatrix
     }
 
-    def "skips existing headers in checkLicenses task"() {
+    @Unroll
+    def "skips existing headers in checkLicenses task (gradle #gradleVersion)"() {
         given:
         def projectDir = temporaryFolder.newFolder()
         def sourceDir = projectDir.toPath().resolve(Paths.get("src", "main", "java", "com", "example")).toFile()
@@ -73,6 +98,7 @@ class LicenserPluginFunctionalTest extends Specification {
             }
             
             license {
+                lineEnding = '\\n'
                 header = project.file('header.txt')
                 skipExistingHeaders = true
             }
@@ -88,18 +114,17 @@ class LicenserPluginFunctionalTest extends Specification {
         """.stripIndent()
 
         when:
-        def runner = GradleRunner.create()
-        runner.forwardOutput()
-        runner.withPluginClasspath()
-        runner.withArguments("checkLicenses")
-        runner.withProjectDir(projectDir)
-        def result = runner.build()
+        def result = runner(projectDir, gradleVersion, extraArgs + "checkLicenses").build()
 
         then:
         result.task(":checkLicenses").outcome == TaskOutcome.SUCCESS
+
+        where:
+        [gradleVersion, _, extraArgs] << testMatrix
     }
 
-    def "skips existing headers in updateLicenses task"() {
+    @Unroll
+    def "skips existing headers in updateLicenses task (gradle #gradleVersion)"() {
         given:
         def projectDir = temporaryFolder.newFolder()
         def sourceDir = projectDir.toPath().resolve(Paths.get("src", "main", "java", "com", "example")).toFile()
@@ -113,6 +138,7 @@ class LicenserPluginFunctionalTest extends Specification {
             }
             
             license {
+                lineEnding = '\\n'
                 header = project.file('header.txt')
                 skipExistingHeaders = true
             }
@@ -129,20 +155,18 @@ class LicenserPluginFunctionalTest extends Specification {
         def sourceFile = new File(sourceDir, "MyClass.java") << sourceFileContent
 
         when:
-        def runner = GradleRunner.create()
-        runner.forwardOutput()
-        runner.withPluginClasspath()
-        runner.withArguments("updateLicenses")
-        runner.withProjectDir(projectDir)
-        runner.debug = true
-        def result = runner.build()
+        def result = runner(projectDir, gradleVersion, extraArgs + "updateLicenses").build()
 
         then:
         result.task(":updateLicenses").outcome == TaskOutcome.UP_TO_DATE
         sourceFile.text == sourceFileContent
+
+        where:
+        [gradleVersion, _, extraArgs] << testMatrix
     }
 
-    def "updates invalid headers in updateLicenses task when skipExistingHeaders=true"() {
+    @Unroll
+    def "updates invalid headers in updateLicenses task when skipExistingHeaders=true (gradle #gradleVersion)"() {
         given:
         def projectDir = temporaryFolder.newFolder()
         def sourceDir = projectDir.toPath().resolve(Paths.get("src", "main", "java", "com", "example")).toFile()
@@ -156,6 +180,7 @@ class LicenserPluginFunctionalTest extends Specification {
             }
             
             license {
+                lineEnding = '\\n'
                 header = project.file('header.txt')
                 skipExistingHeaders = true
             }
@@ -172,11 +197,7 @@ class LicenserPluginFunctionalTest extends Specification {
         def sourceFile = new File(sourceDir, "MyClass.java") << sourceFileContent
 
         when:
-        def runner = GradleRunner.create()
-        runner.forwardOutput()
-        runner.withPluginClasspath()
-        runner.withArguments("updateLicenses")
-        runner.withProjectDir(projectDir)
+        def runner = runner(projectDir, gradleVersion, extraArgs + "updateLicenses")
         runner.debug = true
         def result = runner.build()
 
@@ -195,9 +216,13 @@ class LicenserPluginFunctionalTest extends Specification {
             
             class MyClass {}
         """.stripIndent()
+
+        where:
+        [gradleVersion, _, extraArgs] << testMatrix
     }
 
-    def "can run licenseFormat task"() {
+    @Unroll
+    def "can run licenseFormat task (gradle #gradleVersion)"() {
         given:
         def projectDir = temporaryFolder.newFolder()
         new File(projectDir, "settings.gradle") << ""
@@ -208,21 +233,20 @@ class LicenserPluginFunctionalTest extends Specification {
         """.stripIndent()
 
         when:
-        def runner = GradleRunner.create()
-        runner.forwardOutput()
-        runner.withPluginClasspath()
-        runner.withArguments("licenseFormat")
-        runner.withProjectDir(projectDir)
-        def result = runner.build()
+        def result = runner(projectDir, gradleVersion, extraArgs + "licenseFormat").build()
 
         then:
         result.output.contains("Task :updateLicenses UP-TO-DATE")
         result.output.contains("Task :licenseFormat UP-TO-DATE")
         result.task(":updateLicenses").outcome == TaskOutcome.UP_TO_DATE
         result.task(":licenseFormat").outcome == TaskOutcome.UP_TO_DATE
+
+        where:
+        [gradleVersion, _, extraArgs] << testMatrix
     }
 
-    def "supports custom source sets task"() {
+    @Unroll
+    def "supports custom source sets task (gradle #gradleVersion)"() {
         given:
         def projectDir = temporaryFolder.newFolder()
         new File(projectDir, "settings.gradle") << ""
@@ -237,18 +261,17 @@ class LicenserPluginFunctionalTest extends Specification {
         """.stripIndent()
 
         when:
-        def runner = GradleRunner.create()
-        runner.forwardOutput()
-        runner.withPluginClasspath()
-        runner.withArguments("licenseCheck")
-        runner.withProjectDir(projectDir)
-        def result = runner.build()
+        def result = runner(projectDir, gradleVersion, extraArgs + "licenseCheck").build()
 
         then:
         result.task(":checkLicenseMySourceSet").outcome == TaskOutcome.NO_SOURCE
+
+        where:
+        [gradleVersion, _, extraArgs] << testMatrix
     }
 
-    def "supports custom style"() {
+    @Unroll
+    def "supports custom style (gradle #gradleVersion)"() {
         given:
         def projectDir = temporaryFolder.newFolder()
         def sourcesDir = new File(projectDir, "sources")
@@ -262,13 +285,15 @@ class LicenserPluginFunctionalTest extends Specification {
             }
             
             license {
+                lineEnding = '\\n'
                 header = project.file("header.txt")
+                newLine = false
                 style {
                     c = 'BLOCK_COMMENT'
                 }
                 tasks {
                     sources {
-                        files = project.files("sources")
+                        files.from("sources")
                         include("**/*.c")
                     }
                 }
@@ -276,11 +301,8 @@ class LicenserPluginFunctionalTest extends Specification {
         """.stripIndent()
 
         when:
-        def runner = GradleRunner.create()
-        runner.forwardOutput()
-        runner.withPluginClasspath()
-        runner.withArguments("updateLicenses")
-        runner.withProjectDir(projectDir)
+        def runner = runner(projectDir, gradleVersion, extraArgs + "updateLicenses")
+        runner.debug = true
         def result = runner.build()
 
         then:
@@ -289,12 +311,44 @@ class LicenserPluginFunctionalTest extends Specification {
             /*
              * Copyright header
              */
-             
             TEST
             """.stripIndent()
+
+        where:
+        [gradleVersion, _, extraArgs] << testMatrix
     }
 
-    def "supports Android source sets"() {
+    @Unroll
+    def "license formatting configuration is configuration-cacheable (gradle #gradleVersion)"() {
+        given:
+        def projectDir = temporaryFolder.newFolder()
+        new File(projectDir, "settings.gradle") << ""
+        new File(projectDir, "build.gradle") << """
+            plugins {
+                id('org.cadixdev.licenser')
+            }
+        """.stripIndent()
+
+        when:
+        def result = runner(projectDir, gradleVersion, extraArgs + "licenseFormat").build()
+
+        then:
+        result.output.contains("Configuration cache entry stored")
+
+        when:
+        def resultCached = runner(projectDir, gradleVersion, extraArgs + "licenseFormat").build()
+
+        then:
+        resultCached.output.contains("Reusing configuration cache")
+        resultCached.task(":licenseFormat").outcome == TaskOutcome.UP_TO_DATE
+
+
+        where:
+        [gradleVersion, _, extraArgs] << configurationCacheTestMatrix
+    }
+
+    @Unroll
+    def "supports Android source sets (gradle #gradleVersion)"() {
         given:
         def projectDir = temporaryFolder.newFolder()
         new File(projectDir, "settings.gradle") << ""
@@ -305,7 +359,7 @@ class LicenserPluginFunctionalTest extends Specification {
                 }
             
                 dependencies {
-                    classpath 'com.android.tools.build:gradle:4.0.0'
+                    classpath 'com.android.tools.build:gradle:$androidVersion'
                 }
             }
 
@@ -329,16 +383,65 @@ class LicenserPluginFunctionalTest extends Specification {
         """.stripIndent()
 
         when:
-        def runner = GradleRunner.create()
-        runner.forwardOutput()
-        runner.withPluginClasspath()
-        runner.withArguments("licenseCheck")
-        runner.withProjectDir(projectDir)
-        def result = runner.build()
+        def result = runner(projectDir, gradleVersion, extraArgs + "licenseCheck").build()
 
         then:
         result.task(":checkLicenseAndroidMain").outcome == TaskOutcome.NO_SOURCE
         result.task(":checkLicenseAndroidRelease").outcome == TaskOutcome.NO_SOURCE
         result.task(":checkLicenseAndroidTest").outcome == TaskOutcome.NO_SOURCE
+
+        where:
+        [gradleVersion, androidVersion, extraArgs] << testMatrix.findAll { it[1 /* androidVersion */] != null }
+    }
+
+    @Unroll
+    def "supports Kotlin buildscripts (gradle #gradleVersion)"() {
+        given:
+        def projectDir = temporaryFolder.newFolder()
+        def sourceDir = projectDir.toPath().resolve(Paths.get("src", "main", "java", "com", "example")).toFile()
+        sourceDir.mkdirs()
+        new File(projectDir, "header.txt") << 'New copyright header for ${project}'
+        new File(projectDir, "settings.gradle.kts") << ""
+        new File(projectDir, "build.gradle.kts") << """
+            plugins {
+                java
+                id("org.cadixdev.licenser")
+            }
+            
+            license {
+                lineEnding("\\n")
+                header("header.txt")
+                properties {
+                    this["project"] = "AirhornPowered"
+                }
+            }
+        """.stripIndent()
+        def sourceFileContent = """\
+            package com.example;
+            
+            class MyClass {}
+        """.stripIndent()
+        def sourceFile = new File(sourceDir, "MyClass.java") << sourceFileContent
+
+        when:
+        def runner = runner(projectDir, gradleVersion, extraArgs + "updateLicenses")
+        runner.debug = true
+        def result = runner.build()
+
+        then:
+        result.task(":updateLicenses").outcome == TaskOutcome.SUCCESS
+        sourceFile.text == """\
+            /*
+             * New copyright header for AirhornPowered
+             */
+            
+            package com.example;
+            
+            class MyClass {}
+        """.stripIndent()
+
+        where:
+        [gradleVersion, _, extraArgs] << testMatrix
+
     }
 }

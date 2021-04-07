@@ -26,20 +26,29 @@ package org.cadixdev.gradle.licenser.tasks
 
 import org.cadixdev.gradle.licenser.header.Header
 import org.cadixdev.gradle.licenser.header.PreparedHeader
+import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileTree
 import org.gradle.api.file.FileTreeElement
+import org.gradle.api.file.ProjectLayout
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.Nested
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.util.PatternFilterable
 
-class LicenseTask extends DefaultTask {
+import javax.inject.Inject
 
-    @Input
-    List<Header> headers
+abstract class LicenseTask extends DefaultTask {
+
+    @Nested
+    abstract ListProperty<Header> getHeaders()
 
     @Internal
     FileCollection files
@@ -48,17 +57,38 @@ class LicenseTask extends DefaultTask {
     PatternFilterable filter
 
     @Input
-    String charset
+    abstract Property<String> getCharset()
 
     @Input
-    boolean skipExistingHeaders
+    abstract Property<Boolean> getSkipExistingHeaders()
 
     @InputFiles
     @SkipWhenEmpty
+    // @IgnoreEmptyDependencies (only in 6.8)
+    @PathSensitive(PathSensitivity.ABSOLUTE)
     FileTree getMatchingFiles() {
         def tree = this.files.asFileTree
         return filter != null ? tree.matching(filter) : tree
     }
+
+    void headers(Header... headers) {
+        this.headers.addAll(headers)
+    }
+
+    void headers(final Action<ListProperty<Header>> headers) {
+        headers.execute(this.headers)
+    }
+
+    void charset(final String charset) {
+        this.charset.set(charset)
+    }
+
+    void skipExistingHeaders(final Boolean skip) {
+        this.skipExistingHeaders.set(skip)
+    }
+
+    @Inject
+    protected abstract ProjectLayout getLayout()
 
     protected PreparedHeader prepareMatchingHeader(FileTreeElement element, File file) {
         def header = getMatchingHeader(element)
@@ -81,14 +111,14 @@ class LicenseTask extends DefaultTask {
     }
 
     protected Header getMatchingHeader(FileTreeElement element) {
-        return headers.find { it.filter.isSatisfiedBy(element) }
+        return getHeaders().get().find { it.filter.isSatisfiedBy(element) }
     }
 
     private String projectPath
 
     protected String getSimplifiedPath(File file) {
         if (projectPath == null) {
-            projectPath = project.projectDir.canonicalPath
+            projectPath = layout.projectDirectory.asFile.canonicalPath
         }
 
         def path = file.canonicalPath

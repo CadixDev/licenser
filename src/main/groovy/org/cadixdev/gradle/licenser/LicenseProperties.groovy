@@ -24,8 +24,14 @@
 
 package org.cadixdev.gradle.licenser
 
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Property
+import org.gradle.api.resources.TextResource
+import org.gradle.api.resources.TextResourceFactory
 import org.gradle.api.tasks.util.PatternFilterable
 import org.gradle.api.tasks.util.PatternSet
+
+import javax.inject.Inject
 
 /**
  * Specifies how to format the license header of a subset of the files, defined
@@ -45,16 +51,58 @@ class LicenseProperties implements PatternFilterable {
      * The path to the file containing the license header.
      * By default this is the {@code LICENSE} file in the project directory.
      */
-    File header
+    final Property<TextResource> header
 
     /**
      * Whether to insert an empty line after the license header.
      * By default this is {@code true}.
      */
-    Boolean newLine
+    final Property<Boolean> newLine
 
-    LicenseProperties(PatternSet filter) {
+    protected final Property<String> charset
+    private final TextResourceFactory resources
+
+    @Inject
+    LicenseProperties(PatternSet filter, ObjectFactory objects, TextResourceFactory resources) {
         this.filter = filter
+        this.charset = objects.property(String)
+        this.header = objects.property(TextResource)
+        this.newLine = objects.property(Boolean)
+        this.resources = resources
+    }
+
+    @Inject
+    LicenseProperties(PatternSet filter, ObjectFactory objects, TextResourceFactory resources, Property<String> charset) {
+        this(filter, objects, resources)
+        this.charset.set(charset)
+    }
+
+    /**
+     * @see #header
+     * @param header the new header
+     */
+    void header(final TextResource header) {
+        this.header.set(header)
+    }
+
+    // kotlin + from other plugins
+    /**
+     * Set the header to the contents of a file.
+     *
+     * @param header anything accepted in {@link org.gradle.api.Project#file(Object)}
+     * @see #header
+     */
+    void header(final Object header) {
+        this.header.set(this.charset.map { this.resources.fromFile(header, it) })
+    }
+
+    // groovy
+    void setHeader(final File header) {
+        this.header.set(this.charset.map { this.resources.fromFile(header, it) })
+    }
+
+    void newLine(final Boolean newLine) {
+        this.newLine.set(newLine)
     }
 
 }

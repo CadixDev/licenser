@@ -24,8 +24,12 @@
 
 package org.cadixdev.gradle.licenser
 
+import groovy.transform.PackageScope
 import org.gradle.api.Incubating
-import org.gradle.api.file.FileCollection
+import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Property
+import org.gradle.api.resources.TextResourceFactory
 import org.gradle.api.tasks.util.PatternSet
 
 /**
@@ -43,11 +47,13 @@ class LicenseTaskProperties extends LicenseProperties {
     /**
      * The set of files to operate on.
      */
-    FileCollection files
+    final ConfigurableFileCollection files
 
-    LicenseTaskProperties(PatternSet filter, String name) {
-        super(filter)
+    @PackageScope
+    LicenseTaskProperties(PatternSet filter, String name, ObjectFactory objects, TextResourceFactory text, Property<String> charset) {
+        super(filter, objects, text, charset)
         this.name = name
+        this.files = objects.fileCollection()
     }
 
 }
