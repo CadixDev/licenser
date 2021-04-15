@@ -33,7 +33,8 @@ enum HeaderStyle {
     JAVADOC(~/^\s*\/\*\*(?:[^*].*)?$/, ~/\*\/\s*(.*?)$/, null, '/**', ' *', ' */'),
     HASH(~/^\s*#/, null, ~/^\s*#!/, '#', '#', '#', 'properties', 'yml', 'yaml', 'sh'),
     XML(~/^\s*<!--/, ~/-->\s*(.*?)$/, ~/^\s*<(?:\?xml .*\?|!DOCTYPE .*)>\s*$/, '<!--', '   ', '-->',
-            'xml', 'xsd', 'xsl', 'fxml', 'dtd', 'html', 'xhtml')
+            'xml', 'xsd', 'xsl', 'fxml', 'dtd', 'html', 'xhtml'),
+    DOUBLE_SLASH(~/^\s*\/\//, null, null, '//', '//', '//')
 
     final CommentHeaderFormat format
     private final String[] extensions
