@@ -29,7 +29,6 @@ import org.cadixdev.gradle.licenser.header.Header
 import org.cadixdev.gradle.licenser.tasks.LicenseCheck
 import org.cadixdev.gradle.licenser.tasks.LicenseTask
 import org.cadixdev.gradle.licenser.tasks.LicenseUpdate
-import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
@@ -57,87 +56,87 @@ class Licenser implements Plugin<Project> {
     @Override
     void apply(Project project) {
         this.project = project
+        this.extension = project.extensions.create('license', LicenseExtension, project.objects, project)
+        this.extension.header.set(extension.charset.map { charset -> project.resources.text.fromFile('LICENSE', charset) })
 
-        project.with {
-            this.extension = extensions.create('license', LicenseExtension, project.objects, project)
-            extension.header.set(extension.charset.map { charset -> project.resources.text.fromFile('LICENSE', charset) })
-
-            def headers = objects.listProperty(Header)
-            // TODO: finalizeValueOnRead is not supported on Gradle 5, remove when dropping support
-            try {
-                extension.conditionalProperties.finalizeValueOnRead()
-                headers.finalizeValueOnRead()
-            } catch (final MissingMethodException ignored) {
-                // no method
+        def headers = project.objects.listProperty(Header)
+        // TODO: finalizeValueOnRead is not supported on Gradle 5, remove when dropping support
+        try {
+            extension.conditionalProperties.finalizeValueOnRead()
+            headers.finalizeValueOnRead()
+        } catch (final MissingMethodException ignored) {
+            // no method
+        }
+        headers.set(extension.conditionalProperties.map {
+            def built = []
+            it.reverseEach { props ->
+                built << prepareHeader(extension, props)
             }
-            headers.set(extension.conditionalProperties.map {
-                def built = []
-                it.reverseEach { props ->
-                    built << prepareHeader(extension, props)
-                }
-                built << prepareHeader(extension, extension)
-                return built
-            })
+            built << prepareHeader(extension, extension)
+            return built
+        })
 
-            // Configure tasks from different sources
-            plugins.withType(JavaBasePlugin) {
-                sourceSets.all { SourceSet set ->
+        def plugins = project.plugins
+        def tasks = project.tasks
+
+        // Configure tasks from different sources
+        plugins.withType(JavaBasePlugin) {
+            project.sourceSets.all { SourceSet set ->
+                def extensionIgnoreFailures = extension.ignoreFailures
+                def extensionLineEnding = extension.lineEnding
+                createTask(CHECK_TASK, LicenseCheck, headers, set) {
+                    ignoreFailures.set(extensionIgnoreFailures)
+                }
+                createTask(FORMAT_TASK, LicenseUpdate, headers, set) {
+                    lineEnding.set(extensionLineEnding)
+                }
+            }
+        }
+
+        ['com.android.library', 'com.android.application'].each {
+            plugins.withId(it) {
+                project.android.sourceSets.all { set ->
                     def extensionIgnoreFailures = extension.ignoreFailures
                     def extensionLineEnding = extension.lineEnding
-                    createTask(CHECK_TASK, LicenseCheck, headers, set) {
+                    createAndroidTask(CHECK_TASK, LicenseCheck, headers, set) {
                         ignoreFailures.set(extensionIgnoreFailures)
                     }
-                    createTask(FORMAT_TASK, LicenseUpdate, headers, set) {
+                    createAndroidTask(FORMAT_TASK, LicenseUpdate, headers, set) {
                         lineEnding.set(extensionLineEnding)
                     }
                 }
             }
+        }
 
-            ['com.android.library', 'com.android.application'].each {
-                plugins.withId(it) {
-                    android.sourceSets.all { set ->
-                        def extensionIgnoreFailures = extension.ignoreFailures
-                        def extensionLineEnding = extension.lineEnding
-                        createAndroidTask(CHECK_TASK, LicenseCheck, headers, set) {
-                            ignoreFailures.set(extensionIgnoreFailures)
-                        }
-                        createAndroidTask(FORMAT_TASK, LicenseUpdate, headers, set) {
-                            lineEnding.set(extensionLineEnding)
-                        }
-                    }
-                }
+        extension.tasks.all { LicenseTaskProperties props ->
+            def extensionIgnoreFailures = extension.ignoreFailures
+            def extensionLineEnding = extension.lineEnding
+            createCustomTask(CHECK_TASK, LicenseCheck, props) {
+                ignoreFailures.set(extensionIgnoreFailures)
             }
+            createCustomTask(FORMAT_TASK, LicenseUpdate, props) {
+                lineEnding.set(extensionLineEnding)
+            }
+        }
 
-            extension.tasks.all { LicenseTaskProperties props ->
-                def extensionIgnoreFailures = extension.ignoreFailures
-                def extensionLineEnding = extension.lineEnding
-                createCustomTask(CHECK_TASK, LicenseCheck, props) {
-                    ignoreFailures.set(extensionIgnoreFailures)
-                }
-                createCustomTask(FORMAT_TASK, LicenseUpdate, props) {
-                    lineEnding.set(extensionLineEnding)
-                }
-            }
+        // Then configure catch-all tasks
+        def globalCheck = tasks.register(CHECK_TASK + 's') {
+            dependsOn(tasks.withType(LicenseCheck))
+        }
+        tasks.register('licenseCheck') {
+            dependsOn(globalCheck)
+        }
+        def globalFormat = tasks.register(FORMAT_TASK + 's') {
+            dependsOn(tasks.withType(LicenseUpdate))
+        }
+        tasks.register('licenseFormat') {
+            group = FORMATTING_GROUP
+            dependsOn(globalFormat)
+        }
 
-            // Then configure catch-all tasks
-            def globalCheck = tasks.register(CHECK_TASK + 's') {
-                dependsOn(tasks.withType(LicenseCheck))
-            }
-            tasks.register('licenseCheck') {
+        plugins.withType(LifecycleBasePlugin) {
+            tasks.named(LifecycleBasePlugin.CHECK_TASK_NAME).configure {
                 dependsOn(globalCheck)
-            }
-            def globalFormat = tasks.register(FORMAT_TASK + 's') {
-                dependsOn(tasks.withType(LicenseUpdate))
-            }
-            tasks.register('licenseFormat') {
-                group = FORMATTING_GROUP
-                dependsOn(globalFormat)
-            }
-
-            plugins.withType(LifecycleBasePlugin) {
-                tasks.named(LifecycleBasePlugin.CHECK_TASK_NAME).configure {
-                    dependsOn globalCheck
-                }
             }
         }
     }
