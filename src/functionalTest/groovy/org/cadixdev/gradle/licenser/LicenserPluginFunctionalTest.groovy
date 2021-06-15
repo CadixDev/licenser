@@ -43,7 +43,9 @@ class LicenserPluginFunctionalTest extends Specification {
             // TODO: restore android plugin once versions that support configuration cache are available
             /* gradleVersion | androidVersion | extraArgs */
             [ "6.8.3",         null,            ["--configuration-cache"] ],
-            [ "7.0",           null,            ["--configuration-cache"] ],
+            [ "6.9",           null,            ["--configuration-cache"] ],
+            [ "7.0.2",         null,            ["--configuration-cache"] ],
+            [ "7.1",           null,            ["--configuration-cache"] ],
     ].asImmutable()
 
     static final def testMatrix = ([
