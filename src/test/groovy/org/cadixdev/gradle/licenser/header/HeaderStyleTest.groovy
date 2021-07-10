@@ -24,29 +24,47 @@
 
 package org.cadixdev.gradle.licenser.header
 
-import javax.annotation.Nullable
-import java.util.regex.Pattern
+import spock.lang.Specification
+import spock.lang.Unroll
 
-enum HeaderStyle {
-    BLOCK_COMMENT(~/^\s*\/\*(?:[^*].*)?$/, ~/\*\/\s*(.*?)$/, null, '/*', ' *', ' */',
-        'java', 'groovy', 'scala', 'kt', 'kts', 'gradle', 'css', 'js'),
-    JAVADOC(~/^\s*\/\*\*(?:[^*].*)?$/, ~/\*\/\s*(.*?)$/, null, '/**', ' *', ' */'),
-    HASH(~/^\s*#/, null, ~/^\s*#!/, null, '#', null, 'properties', 'yml', 'yaml', 'sh'),
-    XML(~/^\s*<!--/, ~/-->\s*(.*?)$/, ~/^\s*<(?:\?xml .*\?|!DOCTYPE .*)>\s*$/, '<!--', '   ', '-->',
-            'xml', 'xsd', 'xsl', 'fxml', 'dtd', 'html', 'xhtml'),
-    DOUBLE_SLASH(~/^\s*\/\//, null, null, null, '//', null)
+class HeaderStyleTest extends Specification {
+    @Unroll
+    def "test header style #style"() {
+        when:
+        def lines = style.format.format("Test")
 
-    final CommentHeaderFormat format
-    private final String[] extensions
+        then:
+        lines == expectedLines
 
-    HeaderStyle(Pattern start, @Nullable Pattern end, @Nullable Pattern skipLine,
-                @Nullable String firstLine, String prefix, @Nullable String lastLine, String... extensions) {
-        this.format = new CommentHeaderFormat(this.name(), start, end, skipLine, firstLine, prefix, lastLine)
-        this.extensions = extensions
+        where:
+        [style, expectedLines] << [
+                [HeaderStyle.BLOCK_COMMENT, ["/*", " * Test", " */"]],
+                [HeaderStyle.JAVADOC, ["/**", " * Test", " */"]],
+                [HeaderStyle.DOUBLE_SLASH, ["//", "// Test", "//"]],
+                [HeaderStyle.HASH, ["#", "# Test", "#"]],
+                [HeaderStyle.XML, ["<!--", "    Test", "-->"]]
+        ]
     }
 
-    void register(HeaderFormatRegistry registry) {
-        extensions.each { registry[it] = this }
+    def "DOUBLE_SLASH may contain slashes"() {
+        given:
+        HeaderStyle style = HeaderStyle.DOUBLE_SLASH
+
+        when:
+        def lines = style.format.format("// Test //")
+
+        then:
+        lines == ["//", "// // Test //", "//"]
     }
 
+    def "BLOCK_COMMENT may not contain end of comment"() {
+        given:
+        HeaderStyle style = HeaderStyle.BLOCK_COMMENT
+
+        when:
+        style.format.format("/* Test */")
+
+        then:
+        thrown(IllegalArgumentException)
+    }
 }
