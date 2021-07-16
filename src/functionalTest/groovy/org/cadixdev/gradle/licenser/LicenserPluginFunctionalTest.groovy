@@ -444,6 +444,57 @@ class LicenserPluginFunctionalTest extends Specification {
 
         where:
         [gradleVersion, _, extraArgs] << testMatrix
+    }
 
+    @Unroll
+    def "Plugin tasks should work twice with configuration cache enabled (Gradle #gradleVersion)"() {
+        given:
+        def projectDir = temporaryFolder.newFolder()
+        def sourceDir = projectDir.toPath().resolve(Paths.get("src", "main", "java", "com", "example")).toFile()
+        sourceDir.mkdirs()
+        new File(projectDir, "LICENSE") << "Copyright header"
+        new File(projectDir, "settings.gradle") << ""
+        new File(projectDir, "build.gradle") << """
+            plugins {
+                id('java')
+                id('org.cadixdev.licenser')
+            }
+        """.stripIndent().trim()
+        def sourceFileContent = """\
+            /*
+             * My header
+             */
+            
+            package com.example;
+            
+            class MyClass {}
+        """.stripIndent()
+        def sourceFile = new File(sourceDir, "MyClass.java") << sourceFileContent
+
+        when:
+        def runner = runner(projectDir, gradleVersion, extraArgs + "checkLicenses")
+        runner.debug = true
+        def result = runner.build()
+
+        then:
+        result.task(":checkLicenses").outcome == TaskOutcome.SUCCESS
+        sourceFile.text == """\
+            /*
+             * Copyright header
+             */
+            
+            package com.example;
+            
+            class MyClass {}
+        """.stripIndent()
+
+        when:
+        def secondResult = runner.build()
+
+        then:
+        secondResult.task(":checkLicenses").outcome == TaskOutcome.UP_TO_DATE
+
+        where:
+        [gradleVersion, _, extraArgs] << configurationCacheTestMatrix
     }
 }
