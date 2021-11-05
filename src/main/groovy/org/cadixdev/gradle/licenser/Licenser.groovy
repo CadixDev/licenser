@@ -167,7 +167,9 @@ class Licenser implements Plugin<Project> {
             }
 
             return ""
-        }, (PatternSet) properties.filter, properties.newLine.orElse(extension.newLine),)
+        }, (PatternSet) properties.filter,
+                properties.newLine.orElse(extension.newLine),
+                properties.ignoreNewLine.orElse(extension.ignoreNewLine))
     }
 
     private <T extends LicenseTask> TaskProvider<T> createTask(
