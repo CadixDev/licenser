@@ -34,6 +34,7 @@ import org.gradle.api.file.FileTreeElement
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.IgnoreEmptyDirectories;
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
@@ -64,7 +65,7 @@ abstract class LicenseTask extends DefaultTask {
 
     @InputFiles
     @SkipWhenEmpty
-    // @IgnoreEmptyDependencies (only in 6.8)
+    @IgnoreEmptyDirectories
     @PathSensitive(PathSensitivity.ABSOLUTE)
     FileTree getMatchingFiles() {
         def tree = this.files.asFileTree
