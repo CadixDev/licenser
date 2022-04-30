@@ -11,7 +11,7 @@ sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
 group = 'org.cadixdev.gradle'
-version = '0.6.1'
+version = '0.7.0-SNAPSHOT'
 description = 'A simple license header manager for Gradle'
 
 repositories {
