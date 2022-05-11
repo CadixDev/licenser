@@ -26,17 +26,20 @@ package org.cadixdev.gradle.licenser.util
 
 
 import org.cadixdev.gradle.licenser.header.HeaderStyle
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
 class HeaderHelperTest extends Specification {
+    @Rule
+    TemporaryFolder temporaryFolder = new TemporaryFolder()
+
     def "contentStartsWithValidHeaderFormat returns false with empty input"() {
         given:
-        def inputString = ""
-        def stringReader = new StringReader(inputString)
-        def reader = new BufferedReader(stringReader)
+        def file = new RandomAccessFile(temporaryFolder.newFile(), "r")
 
         when:
-        def result = HeaderHelper.contentStartsWithValidHeaderFormat(reader, HeaderStyle.BLOCK_COMMENT.format)
+        def result = HeaderHelper.contentStartsWithValidHeaderFormat(file, HeaderStyle.BLOCK_COMMENT.format)
 
         then:
         !result
@@ -45,11 +48,11 @@ class HeaderHelperTest extends Specification {
     def "contentStartsWithValidHeaderFormat returns false with non-matching input"() {
         given:
         def inputString = "Not a copyright header"
-        def stringReader = new StringReader(inputString)
-        def reader = new BufferedReader(stringReader)
+        def file = temporaryFolder.newFile() << inputString
+        def randomAccessFile = new RandomAccessFile(file, "r")
 
         when:
-        def result = HeaderHelper.contentStartsWithValidHeaderFormat(reader, HeaderStyle.BLOCK_COMMENT.format)
+        def result = HeaderHelper.contentStartsWithValidHeaderFormat(randomAccessFile, HeaderStyle.BLOCK_COMMENT.format)
 
         then:
         !result
@@ -63,11 +66,11 @@ class HeaderHelperTest extends Specification {
              */
             My Content
         """.stripIndent()
-        def stringReader = new StringReader(inputString)
-        def reader = new BufferedReader(stringReader)
+        def file = temporaryFolder.newFile() << inputString
+        def randomAccessFile = new RandomAccessFile(file, "r")
 
         when:
-        def result = HeaderHelper.contentStartsWithValidHeaderFormat(reader, HeaderStyle.BLOCK_COMMENT.format)
+        def result = HeaderHelper.contentStartsWithValidHeaderFormat(randomAccessFile, HeaderStyle.BLOCK_COMMENT.format)
 
         then:
         result
@@ -81,11 +84,11 @@ class HeaderHelperTest extends Specification {
              */
             My Content
         """.stripIndent()
-        def stringReader = new StringReader(inputString)
-        def reader = new BufferedReader(stringReader)
+        def file = temporaryFolder.newFile() << inputString
+        def randomAccessFile = new RandomAccessFile(file, "r")
 
         when:
-        def result = HeaderHelper.contentStartsWithValidHeaderFormat(reader, HeaderStyle.BLOCK_COMMENT.format)
+        def result = HeaderHelper.contentStartsWithValidHeaderFormat(randomAccessFile, HeaderStyle.BLOCK_COMMENT.format)
 
         then:
         !result
@@ -98,11 +101,11 @@ class HeaderHelperTest extends Specification {
              */
             My Content
         """.stripIndent()
-        def stringReader = new StringReader(inputString)
-        def reader = new BufferedReader(stringReader)
+        def file = temporaryFolder.newFile() << inputString
+        def randomAccessFile = new RandomAccessFile(file, "r")
 
         when:
-        def result = HeaderHelper.contentStartsWithValidHeaderFormat(reader, HeaderStyle.BLOCK_COMMENT.format)
+        def result = HeaderHelper.contentStartsWithValidHeaderFormat(randomAccessFile, HeaderStyle.BLOCK_COMMENT.format)
 
         then:
         result
@@ -115,11 +118,11 @@ class HeaderHelperTest extends Specification {
              * Incomplete copyright header
             My Content
         """.stripIndent()
-        def stringReader = new StringReader(inputString)
-        def reader = new BufferedReader(stringReader)
+        def file = temporaryFolder.newFile() << inputString
+        def randomAccessFile = new RandomAccessFile(file, "r")
 
         when:
-        def result = HeaderHelper.contentStartsWithValidHeaderFormat(reader, HeaderStyle.BLOCK_COMMENT.format)
+        def result = HeaderHelper.contentStartsWithValidHeaderFormat(randomAccessFile, HeaderStyle.BLOCK_COMMENT.format)
 
         then:
         !result
@@ -132,11 +135,11 @@ class HeaderHelperTest extends Specification {
             # Some header
             My Content
         """.stripIndent()
-        def stringReader = new StringReader(inputString)
-        def reader = new BufferedReader(stringReader)
+        def file = temporaryFolder.newFile() << inputString
+        def randomAccessFile = new RandomAccessFile(file, "r")
 
         when:
-        def result = HeaderHelper.contentStartsWithValidHeaderFormat(reader, HeaderStyle.HASH.format)
+        def result = HeaderHelper.contentStartsWithValidHeaderFormat(randomAccessFile, HeaderStyle.HASH.format)
 
         then:
         result
@@ -152,11 +155,11 @@ class HeaderHelperTest extends Specification {
             <document>
             </document>
         """.stripIndent()
-        def stringReader = new StringReader(inputString)
-        def reader = new BufferedReader(stringReader)
+        def file = temporaryFolder.newFile() << inputString
+        def randomAccessFile = new RandomAccessFile(file, "r")
 
         when:
-        def result = HeaderHelper.contentStartsWithValidHeaderFormat(reader, HeaderStyle.XML.format)
+        def result = HeaderHelper.contentStartsWithValidHeaderFormat(randomAccessFile, HeaderStyle.XML.format)
 
         then:
         result

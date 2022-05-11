@@ -24,9 +24,11 @@
 
 package org.cadixdev.gradle.licenser.header
 
+import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 import org.cadixdev.gradle.licenser.util.HeaderHelper
 
+@CompileStatic
 @PackageScope
 class PreparedCommentHeader implements PreparedHeader {
 
@@ -42,12 +44,12 @@ class PreparedCommentHeader implements PreparedHeader {
 
     @Override
     boolean check(File file, String charset, boolean skipExistingHeaders) throws IOException {
-        return file.withReader(charset) { BufferedReader reader ->
+        return new RandomAccessFile(file, "r").with {
             boolean result = skipExistingHeaders ?
-                    HeaderHelper.contentStartsWithValidHeaderFormat(reader, format) :
-                    HeaderHelper.contentStartsWith(reader, this.lines.iterator(), format.skipLine)
+                    HeaderHelper.contentStartsWithValidHeaderFormat(it, format) :
+                    HeaderHelper.contentStartsWith(it, this.lines.iterator(), format.skipLine)
             if (result) {
-                def line = reader.readLine()
+                def line = it.readLine()
                 if (header.newLine.get()) {
                     result = line != null && line.isEmpty()
                 } else if (line != null) {
@@ -73,22 +75,21 @@ class PreparedCommentHeader implements PreparedHeader {
 
         // Open file for verifying the license header and reading the text we
         // need to append after it
-        file.withReader(charset) { BufferedReader reader ->
-            if (skipExistingHeaders) {
-                reader.mark(2048)
-                def startsWithValidHeader = HeaderHelper.contentStartsWithValidHeaderFormat(reader, format)
-                if (startsWithValidHeader) {
-                    valid = true
-                    return
-                } else {
-                    reader.reset()
-                }
+        RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r");
+        if (skipExistingHeaders) {
+            def startsWithValidHeader = HeaderHelper.contentStartsWithValidHeaderFormat(randomAccessFile, format)
+            if (startsWithValidHeader) {
+                return false
             }
+        }
 
+        // Rewind back to the start of the file
+        randomAccessFile.seek(0L)
+        randomAccessFile.with {
             String line
             while (true) {
                 // Find first non-empty line
-                line = HeaderHelper.skipEmptyLines(reader)
+                line = HeaderHelper.skipEmptyLines(it)
                 if (line == null) {
                     return // EOF, invalid and done
                 }
@@ -108,7 +109,9 @@ class PreparedCommentHeader implements PreparedHeader {
             // and the file doesn't have a license header yet
             if (!(line =~ format.start) || (format.end && line =~ format.end)) {
                 last = line
-                text = reader.text
+                byte[] bytes = new byte[it.length() - it.getFilePointer()]
+                it.readFully(bytes)
+                text = new String(bytes, charset)
                 return
             }
 
@@ -133,7 +136,7 @@ class PreparedCommentHeader implements PreparedHeader {
                 }
 
                 // Read the next line from the file
-                line = reader.readLine()
+                line = it.readLine()
                 if (line == null) {
                     // EOF, but the end comment was yet found
                     if (format.end) {
@@ -186,7 +189,7 @@ class PreparedCommentHeader implements PreparedHeader {
                         }
 
                         // Read one more line so we can check for new lines
-                        last = reader.readLine()
+                        last = it.readLine()
                         break
                     }
                 } else if (!(line =~ format.start)) {
@@ -224,7 +227,7 @@ class PreparedCommentHeader implements PreparedHeader {
 
             if (last != null && HeaderHelper.isBlank(last)) {
                 // Skip empty lines
-                while ((last = reader.readLine()) != null && HeaderHelper.isBlank(last)) {
+                while ((last = it.readLine()) != null && HeaderHelper.isBlank(last)) {
                     // Duplicate new lines, NEVER valid
                     valid = false
                 }
@@ -232,7 +235,9 @@ class PreparedCommentHeader implements PreparedHeader {
 
             if (last != null) {
                 // Read the remaining text from the file so we can add it back later
-                text = reader.text
+                byte[] bytes = new byte[it.length() - it.getFilePointer()]
+                it.readFully(bytes)
+                text = new String(bytes, charset)
             }
             return
         }
@@ -289,5 +294,4 @@ class PreparedCommentHeader implements PreparedHeader {
 
         return true
     }
-
 }
