@@ -446,4 +446,50 @@ class LicenserPluginFunctionalTest extends Specification {
         [gradleVersion, _, extraArgs] << testMatrix
 
     }
+
+    @Unroll
+    def "supports URL in header (gradle #gradleVersion)"() {
+        given:
+        def projectDir = temporaryFolder.newFolder()
+        def sourcesDir = projectDir.toPath().resolve(Paths.get("src", "main", "java")).toFile()
+        sourcesDir.mkdirs()
+        new File(projectDir, "settings.gradle") << ""
+        new File(projectDir, "header.txt") << """
+            Copyright header
+            http://example.com/path?query=value#fragment
+        """.stripIndent().trim()
+        def sourceFile = new File(sourcesDir, "MyClass.java") << "public class MyClass {}"
+        new File(projectDir, "build.gradle") << """
+            plugins {
+                id('java')
+                id('org.cadixdev.licenser')
+            }
+            
+            license {
+                header = project.file("header.txt")
+                style {
+                    java = 'DOUBLE_SLASH'
+                }
+            }
+        """.stripIndent()
+
+        when:
+        def runner = runner(projectDir, gradleVersion, extraArgs + "updateLicenses")
+        runner.debug = true
+        def result = runner.build()
+
+        then:
+        result.task(":updateLicenses").outcome == TaskOutcome.SUCCESS
+        sourceFile.text == """\
+            //
+            // Copyright header
+            // http://example.com/path?query=value#fragment
+            //
+            
+            public class MyClass {}
+            """.stripIndent()
+
+        where:
+        [gradleVersion, _, extraArgs] << testMatrix
+    }
 }

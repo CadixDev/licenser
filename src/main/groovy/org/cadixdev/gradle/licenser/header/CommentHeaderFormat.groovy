@@ -24,12 +24,14 @@
 
 package org.cadixdev.gradle.licenser.header
 
+import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 import org.cadixdev.gradle.licenser.util.HeaderHelper
 
 import javax.annotation.Nullable
 import java.util.regex.Pattern
 
+@CompileStatic
 class CommentHeaderFormat implements HeaderFormat {
 
     final String name
@@ -40,13 +42,15 @@ class CommentHeaderFormat implements HeaderFormat {
     @Nullable
     final Pattern skipLine
 
+    @Nullable
     final String firstLine
     final String prefix
+    @Nullable
     final String lastLine
 
     @PackageScope
     CommentHeaderFormat(String name, Pattern start, @Nullable Pattern end, @Nullable Pattern skipLine,
-                        String firstLine, String prefix, String lastLine) {
+                        @Nullable String firstLine, String prefix, @Nullable String lastLine) {
         this.name = name
         this.start = start
         this.end = end
@@ -60,18 +64,19 @@ class CommentHeaderFormat implements HeaderFormat {
         ensureAbsent(text, firstLine)
         ensureAbsent(text, lastLine)
 
-        List<String> result = [firstLine]
+        List<String> result = firstLine == null ? [prefix]: [firstLine]
 
         text.eachLine {
             result << HeaderHelper.stripTrailingIndent("$prefix $it")
         }
 
-        result << lastLine
+        result << (lastLine == null ? prefix : lastLine)
+
         return result
     }
 
     private static void ensureAbsent(String s, String search) {
-        if (s.contains(search)) {
+        if (search != null && s.contains(search)) {
             throw new IllegalArgumentException("Header contains unsupported characters $search")
         }
     }
