@@ -138,6 +138,7 @@ class LicenseExtension extends LicenseProperties {
         }
         this.lineEnding = objects.property(String).convention(defaultLineEnding)
         this.newLine.convention(true)
+        this.ignoreNewLine.convention(false)
 
         // Files without standard comment format
         exclude '**/*.txt'

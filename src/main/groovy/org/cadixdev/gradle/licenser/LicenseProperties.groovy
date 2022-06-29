@@ -59,6 +59,12 @@ class LicenseProperties implements PatternFilterable {
      */
     final Property<Boolean> newLine
 
+    /**
+     * Pay no attention to the line after the license header.
+     * By default this is {@code false}.
+     */
+    final Property<Boolean> ignoreNewLine
+
     protected final Property<String> charset
     private final TextResourceFactory resources
 
@@ -68,6 +74,7 @@ class LicenseProperties implements PatternFilterable {
         this.charset = objects.property(String)
         this.header = objects.property(TextResource)
         this.newLine = objects.property(Boolean)
+        this.ignoreNewLine = objects.property(Boolean)
         this.resources = resources
     }
 
@@ -103,6 +110,10 @@ class LicenseProperties implements PatternFilterable {
 
     void newLine(final Boolean newLine) {
         this.newLine.set(newLine)
+    }
+
+    void ignoreNewLine(final Boolean ignoreNewLine) {
+        this.ignoreNewLine.set(ignoreNewLine)
     }
 
 }
