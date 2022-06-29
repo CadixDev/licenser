@@ -29,6 +29,51 @@ import org.cadixdev.gradle.licenser.header.HeaderStyle
 import spock.lang.Specification
 
 class HeaderHelperTest extends Specification {
+
+    def "getExtension returns the extension"() {
+        given:
+        def filename = "App.java"
+
+        when:
+        def result = HeaderHelper.getExtension(filename)
+
+        then:
+        result == "java"
+    }
+
+    def "getExtension returns the whole filename without dot"() {
+        given:
+        def filename = "Dockerfile"
+
+        when:
+        def result = HeaderHelper.getExtension(filename)
+
+        then:
+        result == "Dockerfile"
+    }
+
+    def "getExtension returns filename from path"() {
+        given:
+        def path = "some/sub/path/Jenkinsfile"
+
+        when:
+        def result = HeaderHelper.getExtension(path)
+
+        then:
+        result == "Jenkinsfile"
+    }
+
+    def "getExtension returns the whole filename even if the path contains a dot"() {
+        given:
+        def path = "some.sub/path.with.dots/Vagrantfile"
+
+        when:
+        def result = HeaderHelper.getExtension(path)
+
+        then:
+        result == "Vagrantfile"
+    }
+
     def "contentStartsWithValidHeaderFormat returns false with empty input"() {
         given:
         def inputString = ""
