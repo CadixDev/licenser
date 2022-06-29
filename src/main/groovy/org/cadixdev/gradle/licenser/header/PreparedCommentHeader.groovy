@@ -49,7 +49,7 @@ class PreparedCommentHeader implements PreparedHeader {
             if (result) {
                 def line = reader.readLine()
                 if (header.newLine.get()) {
-                    result = line != null && line.isEmpty()
+                    result = line != null && line.trim().isEmpty()
                 } else if (line != null) {
                     result = !line.isEmpty()
                 }
@@ -215,7 +215,7 @@ class PreparedCommentHeader implements PreparedHeader {
             if (valid) {
                 if (header.newLine.get()) {
                     // Only valid if next line is empty
-                    valid = last != null && last.isEmpty()
+                    valid = last != null && last.trim().isEmpty()
                 } else if (last != null) {
                     // Only valid if next line is NOT empty
                     valid = !HeaderHelper.isBlank(last)
