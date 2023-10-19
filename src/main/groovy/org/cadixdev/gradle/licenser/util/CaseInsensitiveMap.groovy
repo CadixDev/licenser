@@ -51,4 +51,5 @@ class CaseInsensitiveMap<V> {
     void putAll(Map<? extends String, ? extends V> m) {
         m.each this.&put
     }
+
 }
