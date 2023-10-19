@@ -116,10 +116,13 @@ class LicenserPluginFunctionalTest extends Specification {
         """.stripIndent()
 
         when:
-        def result = runner(projectDir, gradleVersion, extraArgs + "checkLicenses").build()
+        // Run twice to make sure that we can read the configuration cache
+        def firstResult = runner(projectDir, gradleVersion, extraArgs + "checkLicenses").build()
+        def secondResult = runner(projectDir, gradleVersion, extraArgs + "checkLicenses").build()
 
         then:
-        result.task(":checkLicenses").outcome == TaskOutcome.SUCCESS
+        firstResult.task(":checkLicenses").outcome == TaskOutcome.SUCCESS
+        secondResult.task(":checkLicenses").outcome == TaskOutcome.SUCCESS
 
         where:
         [gradleVersion, _, extraArgs] << testMatrix
