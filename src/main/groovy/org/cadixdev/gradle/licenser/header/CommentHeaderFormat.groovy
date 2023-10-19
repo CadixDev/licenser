@@ -24,12 +24,14 @@
 
 package org.cadixdev.gradle.licenser.header
 
+import groovy.transform.EqualsAndHashCode
 import groovy.transform.PackageScope
 import org.cadixdev.gradle.licenser.util.HeaderHelper
 
 import javax.annotation.Nullable
 import java.util.regex.Pattern
 
+@EqualsAndHashCode
 class CommentHeaderFormat implements HeaderFormat {
 
     final String name
