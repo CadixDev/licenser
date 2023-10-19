@@ -52,7 +52,7 @@ class Header {
 
     private String text
 
-    private final Map<HeaderFormat, PreparedHeader> formatted = new IdentityHashMap<>()
+    private final Map<HeaderFormat, PreparedHeader> formatted = new HashMap<>()
 
     Header(HeaderFormatRegistry registry, ListProperty<String> keywords, Provider<String> loader, PatternSet filter, Provider<Boolean> newLine) {
         this.registry = registry

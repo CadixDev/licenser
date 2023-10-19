@@ -24,35 +24,31 @@
 
 package org.cadixdev.gradle.licenser.util
 
-class CaseInsensitiveMap<V> extends HashMap<String, V> {
+class CaseInsensitiveMap<V> {
+    @Delegate(includes = ["size", "isEmpty", "containsValue", "clear", "keySet", "values", "entrySet", "equals", "hashCode"])
+    private final Map<String, V> map = new HashMap<>();
 
     private static String normalizeKey(Object key) {
         return key.toString().toLowerCase(Locale.ROOT)
     }
 
-    @Override
     boolean containsKey(Object key) {
-        return super.containsKey(normalizeKey(key))
+        return map.containsKey(normalizeKey(key))
     }
 
-    @Override
     V get(Object key) {
-        return super.get(normalizeKey(key))
+        return map.get(normalizeKey(key))
     }
 
-    @Override
     V put(String key, V value) {
-        return super.put(normalizeKey(key), value)
+        return map.put(normalizeKey(key), value)
     }
 
-    @Override
     V remove(Object key) {
-        return super.remove(normalizeKey(key))
+        return map.remove(normalizeKey(key))
     }
 
-    @Override
     void putAll(Map<? extends String, ? extends V> m) {
         m.each this.&put
     }
-
 }
