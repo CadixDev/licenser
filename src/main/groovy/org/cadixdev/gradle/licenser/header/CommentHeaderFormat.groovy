@@ -24,12 +24,14 @@
 
 package org.cadixdev.gradle.licenser.header
 
+import groovy.transform.EqualsAndHashCode
 import groovy.transform.PackageScope
 import org.cadixdev.gradle.licenser.util.HeaderHelper
 
 import javax.annotation.Nullable
 import java.util.regex.Pattern
 
+@EqualsAndHashCode
 class CommentHeaderFormat implements HeaderFormat {
 
     final String name
@@ -84,26 +86,5 @@ class CommentHeaderFormat implements HeaderFormat {
     @Override
     String toString() {
         return name
-    }
-
-    boolean equals(o) {
-        if (this.is(o)) return true
-        if (o == null || getClass() != o.class) return false
-
-        CommentHeaderFormat that = (CommentHeaderFormat) o
-
-        if (end != that.end) return false
-        if (firstLine != that.firstLine) return false
-        if (lastLine != that.lastLine) return false
-        if (name != that.name) return false
-        if (prefix != that.prefix) return false
-        if (skipLine != that.skipLine) return false
-        if (start != that.start) return false
-
-        return true
-    }
-
-    int hashCode() {
-        return Objects.hash(name, start, end, skipLine, firstLine, prefix, lastLine)
     }
 }
