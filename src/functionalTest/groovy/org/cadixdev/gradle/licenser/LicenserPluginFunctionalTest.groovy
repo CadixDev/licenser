@@ -168,6 +168,59 @@ class LicenserPluginFunctionalTest extends Specification {
     }
 
     @Unroll
+    def "supports long files with skipExistingHeaders = true in updateLicenses task (gradle #gradleVersion)"() {
+        given:
+        def projectDir = temporaryFolder.newFolder()
+        def sourceDir = projectDir.toPath().resolve(Paths.get("src", "main", "java", "com", "example")).toFile()
+        sourceDir.mkdirs()
+        new File(projectDir, "header.txt") << "New copyright header"
+        new File(projectDir, "settings.gradle") << ""
+        new File(projectDir, "build.gradle") << """
+            plugins {
+                id('java')
+                id('org.cadixdev.licenser')
+            }
+            
+            license {
+                lineEnding = '\\n'
+                header = project.file('header.txt')
+                skipExistingHeaders = true
+            }
+        """.stripIndent()
+        def sourceFileBuilder = new StringBuilder("""\
+            package com.example;
+            
+            class MyClass {
+        """.stripIndent())
+        // Add a lot of fields to make the file long
+        for (int i = 0; i < 1000; i++) {
+            sourceFileBuilder += "    private int field"
+            sourceFileBuilder += i
+            sourceFileBuilder += ";\n"
+        }
+        sourceFileBuilder += "}\n"
+        def sourceFileContent = sourceFileBuilder.toString()
+        def sourceFile = new File(sourceDir, "MyClass.java") << sourceFileContent
+
+        def expectedResult = """\
+            /*
+             * New copyright header
+             */
+            
+        """.stripIndent() + sourceFileContent
+
+        when:
+        def result = runner(projectDir, gradleVersion, extraArgs + "updateLicenses").build()
+
+        then:
+        result.task(":updateLicenses").outcome == TaskOutcome.SUCCESS
+        sourceFile.text == expectedResult
+
+        where:
+        [gradleVersion, _, extraArgs] << testMatrix
+    }
+
+    @Unroll
     def "updates invalid headers in updateLicenses task when skipExistingHeaders=true (gradle #gradleVersion)"() {
         given:
         def projectDir = temporaryFolder.newFolder()

@@ -113,7 +113,10 @@ public final class HeaderHelper {
                 break;
             }
             // If the current line doesn't match and there's no end marker, assume the header is complete
-            contentLinesMatch = contentLinesMatch && (line.startsWith(format.getPrefix()) || format.getEnd() == null);
+            if (!line.startsWith(format.getPrefix()) && format.getEnd() != null) {
+                contentLinesMatch = false;
+                break;
+            }
         }
 
         return firstLineMatches && contentLinesMatch && lastLineMatches;
