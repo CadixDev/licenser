@@ -136,3 +136,23 @@ The plugin can be configured using the `license` extension on the project.
         // Override the line ending used for license files (Default: system line ending)
         lineEnding = '\n'
     }
+
+## Gradle KTS
+
+If you want to use Licenser Gradle plugin in Gradle Kotlin, use the exact same configurations as we discussed before but instead of:
+
+```grovy
+
+license {
+// Your configurations
+}
+
+```
+
+use:
+
+```
+configure<org.cadixdev.gradle.licenser.LicenseExtension> {
+ // Your configurations
+}
+```
