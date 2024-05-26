@@ -28,6 +28,7 @@ import org.cadixdev.gradle.licenser.header.CommentHeaderFormat;
 
 import javax.annotation.Nullable;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.regex.Pattern;
@@ -37,9 +38,15 @@ public final class HeaderHelper {
     private HeaderHelper() {
     }
 
-    public static String getExtension(String s) {
-        final int pos = s.lastIndexOf('.');
-        return pos >= 0 ? s.substring(pos + 1) : null;
+    public static String getExtension(String path) {
+        String filename = getFilename(path);
+        final int pos = filename.lastIndexOf('.');
+        return pos >= 0 ? filename.substring(pos + 1) : filename;
+    }
+
+    private static String getFilename(String path) {
+        final int pos = path.lastIndexOf(File.separatorChar);
+        return pos >= 0 ? path.substring(pos + 1) : path;
     }
 
     public static String stripIndent(String s) {

@@ -324,6 +324,53 @@ class LicenserPluginFunctionalTest extends Specification {
     }
 
     @Unroll
+    def "support mapping without extension (gradle #gradleVersion)"() {
+        given:
+        def projectDir = temporaryFolder.newFolder()
+        def sourcesDir = new File(projectDir, "sources")
+        sourcesDir.mkdirs()
+        new File(projectDir, "settings.gradle") << ""
+        new File(projectDir, "header.txt") << "Copyright header"
+        def sourceFile = new File(sourcesDir, "Specialfile") << "TEST"
+        new File(projectDir, "build.gradle") << """
+            plugins {
+                id('org.cadixdev.licenser')
+            }
+            
+            license {
+                lineEnding = '\\n'
+                header = project.file("header.txt")
+                newLine = false
+                style {
+                    Specialfile = 'HASH'
+                }
+                tasks {
+                    sources {
+                        files.from("sources")
+                    }
+                }
+            }
+        """.stripIndent()
+
+        when:
+        def runner = runner(projectDir, gradleVersion, extraArgs + "updateLicenses")
+        runner.debug = true
+        def result = runner.build()
+
+        then:
+        result.task(":updateLicenseCustomSources").outcome == TaskOutcome.SUCCESS
+        sourceFile.text == """\
+            #
+            # Copyright header
+            #
+            TEST
+            """.stripIndent()
+
+        where:
+        [gradleVersion, _, extraArgs] << testMatrix
+    }
+
+    @Unroll
     def "license formatting configuration is configuration-cacheable (gradle #gradleVersion)"() {
         given:
         def projectDir = temporaryFolder.newFolder()
