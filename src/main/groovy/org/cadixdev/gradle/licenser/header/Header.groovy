@@ -50,16 +50,20 @@ class Header {
     @Input
     final Provider<Boolean> newLine
 
+    @Input
+    final Provider<Boolean> ignoreNewLine
+
     private String text
 
     private final Map<HeaderFormat, PreparedHeader> formatted = new HashMap<>()
 
-    Header(HeaderFormatRegistry registry, ListProperty<String> keywords, Provider<String> loader, PatternSet filter, Provider<Boolean> newLine) {
+    Header(HeaderFormatRegistry registry, ListProperty<String> keywords, Provider<String> loader, PatternSet filter, Provider<Boolean> newLine, Provider<Boolean> ignoreNewLine) {
         this.registry = registry
         this.keywords = keywords.map { it*.toLowerCase() }
         this.loader = loader
         this.filter = filter?.asSpec ?: Specs.satisfyAll()
         this.newLine = newLine
+        this.ignoreNewLine = ignoreNewLine
     }
 
     @Input

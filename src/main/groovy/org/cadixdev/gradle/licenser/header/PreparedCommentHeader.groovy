@@ -46,7 +46,7 @@ class PreparedCommentHeader implements PreparedHeader {
             boolean result = skipExistingHeaders ?
                     HeaderHelper.contentStartsWithValidHeaderFormat(reader, format) :
                     HeaderHelper.contentStartsWith(reader, this.lines.iterator(), format.skipLine)
-            if (result) {
+            if (result && !header.ignoreNewLine.get()) {
                 def line = reader.readLine()
                 if (header.newLine.get()) {
                     result = line != null && line.isEmpty()
@@ -212,7 +212,7 @@ class PreparedCommentHeader implements PreparedHeader {
             }
 
             // Look more carefully at the new lines
-            if (valid) {
+            if (valid && !header.ignoreNewLine.get()) {
                 if (header.newLine.get()) {
                     // Only valid if next line is empty
                     valid = last != null && last.isEmpty()

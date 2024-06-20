@@ -449,4 +449,61 @@ class LicenserPluginFunctionalTest extends Specification {
         [gradleVersion, _, extraArgs] << testMatrix
 
     }
+
+    @Unroll
+    def "ignore new line (gradle #gradleVersion)"() {
+        given:
+        def projectDir = temporaryFolder.newFolder()
+        def sourceDir = projectDir.toPath().resolve(Paths.get("src", "main", "java", "com", "example")).toFile()
+        sourceDir.mkdirs()
+        new File(projectDir, "header.txt") << "Copyright header"
+        new File(projectDir, "settings.gradle") << ""
+        new File(projectDir, "build.gradle") << """
+            plugins {
+                id('java')
+                id('org.cadixdev.licenser')
+            }
+
+            license {
+                lineEnding = '\\n'
+                header = project.file('header.txt')
+                ignoreNewLine = true
+            }
+        """.stripIndent()
+        new File(sourceDir, "One.java") << String.join("\n",
+                "/*",
+                " * Copyright header",
+                " */",
+                "   ",
+                "package com.example;",
+                "",
+                "class One {}",
+                ""
+        )
+        new File(sourceDir, "Two.java") << String.join("\n",
+                "/*",
+                " * Copyright header",
+                " */",
+                "",
+                "package com.example;",
+                "",
+                "class Two {}",
+                ""
+        )
+        new File(sourceDir, "Three.java") << String.join("\n",
+                "/*",
+                " * Copyright header",
+                " */",
+                "package com.example;",
+                "",
+                "class Three {}",
+                ""
+        )
+        when:
+        def result = runner(projectDir, gradleVersion, extraArgs + "checkLicenses").build()
+        then:
+        result.task(":checkLicenses").outcome == TaskOutcome.SUCCESS
+        where:
+        [gradleVersion, _, extraArgs] << testMatrix
+    }
 }
