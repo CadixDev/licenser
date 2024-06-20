@@ -129,6 +129,47 @@ class LicenserPluginFunctionalTest extends Specification {
     }
 
     @Unroll
+    def "allow spaces in new line at checkLicenses task (gradle #gradleVersion)"() {
+        given:
+        def projectDir = temporaryFolder.newFolder()
+        def sourceDir = projectDir.toPath().resolve(Paths.get("src", "main", "java", "com", "example")).toFile()
+        sourceDir.mkdirs()
+        new File(projectDir, "header.txt") << "Copyright header"
+        new File(projectDir, "settings.gradle") << ""
+        new File(projectDir, "build.gradle") << """
+            plugins {
+                id('java')
+                id('org.cadixdev.licenser')
+            }
+            
+            license {
+                lineEnding = '\\n'
+                header = project.file('header.txt')
+            }
+        """.stripIndent()
+
+        new File(sourceDir, "MyClass.java") << String.join("\n",
+            "/*",
+            " * Copyright header",
+            " */",
+            "   ", // allow spaces
+            "package com.example;",
+            "",
+            "class MyClass {}",
+            ""
+        )
+
+        when:
+        def result = runner(projectDir, gradleVersion, extraArgs + "checkLicenses").build()
+
+        then:
+        result.task(":checkLicenses").outcome == TaskOutcome.SUCCESS
+
+        where:
+        [gradleVersion, _, extraArgs] << testMatrix
+    }
+
+    @Unroll
     def "skips existing headers in updateLicenses task (gradle #gradleVersion)"() {
         given:
         def projectDir = temporaryFolder.newFolder()
