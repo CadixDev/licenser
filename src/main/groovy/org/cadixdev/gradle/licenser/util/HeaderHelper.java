@@ -24,14 +24,17 @@
 
 package org.cadixdev.gradle.licenser.util;
 
+import groovy.transform.CompileStatic;
 import org.cadixdev.gradle.licenser.header.CommentHeaderFormat;
 
 import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.Iterator;
 import java.util.regex.Pattern;
 
+@CompileStatic
 public final class HeaderHelper {
 
     private HeaderHelper() {
@@ -72,9 +75,9 @@ public final class HeaderHelper {
         return "";
     }
 
-    public static boolean contentStartsWith(BufferedReader reader, Iterator<String> itr, Pattern ignored) throws IOException {
+    public static boolean contentStartsWith(RandomAccessFile file, Iterator<String> itr, Pattern ignored) throws IOException {
         String line;
-        while (itr.hasNext() && (line = reader.readLine()) != null) {
+        while (itr.hasNext() && (line = file.readLine()) != null) {
             if (ignored != null && ignored.matcher(line).find()) {
                 continue;
             }
@@ -87,9 +90,9 @@ public final class HeaderHelper {
         return !itr.hasNext();
     }
 
-    public static boolean contentStartsWithValidHeaderFormat(BufferedReader reader, CommentHeaderFormat format) throws IOException {
+    public static boolean contentStartsWithValidHeaderFormat(RandomAccessFile file, CommentHeaderFormat format) throws IOException {
         String firstLine;
-        while ((firstLine = skipEmptyLines(reader)) != null && findPattern(firstLine, format.getSkipLine())) {
+        while ((firstLine = skipEmptyLines(file)) != null && findPattern(firstLine, format.getSkipLine())) {
             // skip ignored lines
         }
         if (firstLine == null) {
@@ -100,7 +103,7 @@ public final class HeaderHelper {
         boolean contentLinesMatch = true;
 
         String line;
-        while ((line = reader.readLine()) != null) {
+        while ((line = file.readLine()) != null) {
             // skip ignored lines
             if (findPattern(line, format.getSkipLine())) {
                 continue;
@@ -131,9 +134,10 @@ public final class HeaderHelper {
         return stripIndent(s).isEmpty();
     }
 
-    public static String skipEmptyLines(BufferedReader reader) throws IOException {
+    @Nullable
+    public static String skipEmptyLines(RandomAccessFile file) throws IOException {
         String line;
-        while ((line = reader.readLine()) != null) {
+        while ((line = file.readLine()) != null) {
             if (!isBlank(line)) {
                 return line;
             }
@@ -141,5 +145,4 @@ public final class HeaderHelper {
 
         return null;
     }
-
 }

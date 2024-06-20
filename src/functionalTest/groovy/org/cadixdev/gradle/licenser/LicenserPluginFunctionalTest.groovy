@@ -447,6 +447,54 @@ class LicenserPluginFunctionalTest extends Specification {
 
         where:
         [gradleVersion, _, extraArgs] << testMatrix
+    }
 
+    @Unroll
+    def "updates headers in updateLicenses task for files larger than 2048 bytes (gradle #gradleVersion)"() {
+        given:
+        def projectDir = temporaryFolder.newFolder()
+        def sourceDir = projectDir.toPath().resolve(Paths.get("src", "main", "java", "com", "example")).toFile()
+        sourceDir.mkdirs()
+        new File(projectDir, "header.txt") << "New copyright header"
+        new File(projectDir, "settings.gradle") << ""
+        new File(projectDir, "build.gradle") << """
+            plugins {
+                id('java')
+                id('org.cadixdev.licenser')
+            }
+            
+            license {
+                lineEnding = '\\n'
+                header = project.file('header.txt')
+                skipExistingHeaders = true
+            }
+        """.stripIndent()
+        def sourceFileContent = """\
+            package com.example;
+            
+            class MyClass {
+            }
+        """.stripIndent() + "// Trailing data\n" * 256
+
+        def sourceFile = new File(sourceDir, "MyClass.java") << sourceFileContent
+
+        when:
+        def result = runner(projectDir, gradleVersion, extraArgs + "updateLicenses").build()
+
+        then:
+        result.task(":updateLicenses").outcome == TaskOutcome.SUCCESS
+        sourceFile.text.startsWith("""\
+            /*
+             * New copyright header
+             */
+             
+            package com.example;
+            
+            class MyClass {
+            }
+            """.stripIndent().trim())
+
+        where:
+        [gradleVersion, _, extraArgs] << testMatrix
     }
 }
